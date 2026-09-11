@@ -53,7 +53,7 @@ const tg = window.Telegram.WebApp;
   {name:"Task", img:"images/task(down).png"},
   {name:"PlayStation", img:"images/ps.png", groupColor:"#eab308"},
 
-  {name:"GoJail", img:"images/gojail.png", groupColor:"#22c55e"},
+  {name:"GoJail", img:"images/gojail.png",},
   {name:"Yakuza", img:"images/yakuza.png", groupColor:"#22c55e"},
   {name:"Assassin's Creed", img:"images/ac.png", groupColor:"#10b981"},
   {name:"Cosa Nostra", img:"images/cosa nostra.png", groupColor:"#22c55e"},
@@ -74,14 +74,28 @@ const tg = window.Telegram.WebApp;
     cell.className = `cell`;
     cell.dataset.id = i;
     cell.style.backgroundImage = `url('${data.img}')`; // фонова картинка
-
-    if(data.groupColor) {
+    
+    // Додаємо кольорову смужку, яка "дивиться" в центр
+    if (data.groupColor) {
       const colorBar = document.createElement("div");
-      colorBar.className = "color-bar";
       colorBar.style.backgroundColor = data.groupColor;
+      
+      if (i >= 0 && i <= 10) {
+        // Нижній ряд (0-10) -> смужка зверху
+        colorBar.className = "color-bar bar-top"; 
+      } else if (i > 10 && i < 20) {
+        // Лівий ряд (11-19) -> смужка справа
+        colorBar.className = "color-bar bar-right"; 
+      } else if (i >= 20 && i <= 30) {
+        // Верхній ряд (20-30) -> смужка знизу
+        colorBar.className = "color-bar bar-bottom"; 
+      } else {
+        // Правий ряд (31-39) -> смужка зліва
+        colorBar.className = "color-bar bar-left"; 
+      }
+      
       cell.appendChild(colorBar);
     }
-
 
     cells.push(cell);
     board.appendChild(cell);

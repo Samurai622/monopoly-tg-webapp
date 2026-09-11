@@ -207,15 +207,35 @@ body {
 #payBtn { background: #ef4444; }
 #diceResult { margin-top: 10px; font-size: 16px; color: #38bdf8; font-weight: bold;}
 
+/* Базовий стиль смужки */
 .color-bar {
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:22%;
-  border-bottom: 1px solid #334155;
+  position: absolute;
   z-index: 1;
   opacity: 0.95;
+}
+
+/* Для нижнього ряду (смужка зверху клітинки) */
+.bar-top {
+  top: 0; left: 0; width: 100%; height: 22%;
+  border-bottom: 1px solid #334155;
+}
+
+/* Для верхнього ряду (смужка знизу клітинки) */
+.bar-bottom {
+  bottom: 0; left: 0; width: 100%; height: 22%;
+  border-top: 1px solid #334155;
+}
+
+/* Для лівого ряду (смужка справа клітинки) */
+.bar-right {
+  top: 0; right: 0; width: 22%; height: 100%;
+  border-left: 1px solid #334155;
+}
+
+/* Для правого ряду (смужка зліва клітинки) */
+.bar-left {
+  top: 0; left: 0; width: 22%; height: 100%;
+  border-right: 1px solid #334155;
 }
 
 /* =========================================
