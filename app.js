@@ -1,6 +1,4 @@
-const { group } = require("node:console");
-
-  const tg = window.Telegram.WebApp;
+const tg = window.Telegram.WebApp;
   tg.expand();
 
   if (!tg.initDataUnsafe?.user) {
@@ -76,6 +74,15 @@ const { group } = require("node:console");
     cell.className = `cell`;
     cell.dataset.id = i;
     cell.style.backgroundImage = `url('${data.img}')`; // фонова картинка
+
+    if(data.groupColor) {
+      const colorBar = document.createElement("div");
+      colorBar.className = "color-bar";
+      colorBar.style.backgroundColor = data.groupColor;
+      cell.appendChild(colorBar);
+    }
+
+
     cells.push(cell);
     board.appendChild(cell);
   });
