@@ -1,3 +1,5 @@
+const { group } = require("node:console");
+
   const tg = window.Telegram.WebApp;
   tg.expand();
 
@@ -21,48 +23,48 @@
   /* Масив клітинок з назвами і фон-картинками */
   const cellsData = [
   {name:"Start", img:"images/start.png"},
-  {name:"Marvel", img:"images/marvel.png"},
-  {name:"Pixar", img:"images/pixar.png"},
+  {name:"Marvel", img:"images/marvel.png", groupColor:"#9333ea"},
+  {name:"Pixar", img:"images/pixar.png", groupColor:"#9333ea"},
   {name:"Task", img:"images/task(down).png"},
   {name:"GiveUser", img:"images/giveuser.png"},
-  {name:"Audi", img:"images/audi.png"},
-  {name:"Sprite", img:"images/sprite.png"},
-  {name:"Fanta", img:"images/fanta.png"},
-  {name:"Minecraft", img:"images/minecraft.png"},
-  {name:"CocaCola", img:"images/cocacola.png"},
+  {name:"Audi", img:"images/audi.png", groupColor:"#475569"},
+  {name:"Sprite", img:"images/sprite.png", groupColor:"#38bdf8"},
+  {name:"Fanta", img:"images/fanta.png", groupColor:"#38bdf8"},
+  {name:"Minecraft", img:"images/minecraft.png", groupColor:"#10b981"},
+  {name:"CocaCola", img:"images/cocacola.png", groupColor:"#38bdf8"},
 
   {name:"Casino", img:"images/casino.png"},
-  {name:"Starbucks", img:"images/starbucks.png"},
+  {name:"Starbucks", img:"images/starbucks.png", groupColor:"#db2777"},
   {name:"Task", img:"images/task(left).png"},
-  {name:"Blue Bottle Coffee", img:"images/bluebottlecoffee.png"},
-  {name:"Lavazza", img:"images/lavazza.png"},
-  {name:"BMW", img:"images/bmw.png"},
-  {name:"McDonalds", img:"images/mcdonalds.png"},
-  {name:"KFS", img:"images/kfs.png"},
+  {name:"Blue Bottle Coffee", img:"images/bluebottlecoffee.png", groupColor:"#db2777"},
+  {name:"Lavazza", img:"images/lavazza.png", groupColor:"#db2777"},
+  {name:"BMW", img:"images/bmw.png", groupColor:"#475569"},
+  {name:"McDonalds", img:"images/mcdonalds.png", groupColor:"#f97316"},
+  {name:"KFS", img:"images/kfs.png", groupColor:"#f97316"},
   {name:"Task", img:"images/task(left).png"},
-  {name:"Pizza Hut", img:"images/pizza hut.png"},
+  {name:"Pizza Hut", img:"images/pizza hut.png", groupColor:"#f97316"},
 
   {name:"Jail", img:"images/jail.png"},
-  {name:"Telegram", img:"images/telegram.png"},
-  {name:"WhatsApp", img:"images/whatsapp.png"},
-  {name:"Instagram", img:"images/instagram.png"},
+  {name:"Telegram", img:"images/telegram.png", groupColor:"#ef4444"},
+  {name:"WhatsApp", img:"images/whatsapp.png", groupColor:"#ef4444"},
+  {name:"Instagram", img:"images/instagram.png", groupColor:"#ef4444"},
   {name:"Task", img:"images/task(down).png"},
-  {name:"Lamborghini", img:"images/lamborghini.png"},
+  {name:"Lamborghini", img:"images/lamborghini.png", groupColor:"#475569"},
   {name:"Give to bank", img:"images/givebank.png"},
-  {name:"Apple", img:"images/apple.png"},
+  {name:"Apple", img:"images/apple.png", groupColor:"#eab308"},
   {name:"Task", img:"images/task(down).png"},
-  {name:"PlayStation", img:"images/ps.png"},
+  {name:"PlayStation", img:"images/ps.png", groupColor:"#eab308"},
 
-  {name:"GoJail", img:"images/gojail.png"},
-  {name:"Yakuza", img:"images/yakuza.png"},
-  {name:"Assassin's Creed", img:"images/ac.png"},
-  {name:"Cosa Nostra", img:"images/cosa nostra.png"},
-  {name:"Triads", img:"images/triads.png"},
-  {name:"Mersedes-Benz", img:"images/mercedes-benz.png"},
-  {name:"Gucci", img:"images/gucci.png"},
+  {name:"GoJail", img:"images/gojail.png", groupColor:"#22c55e"},
+  {name:"Yakuza", img:"images/yakuza.png", groupColor:"#22c55e"},
+  {name:"Assassin's Creed", img:"images/ac.png", groupColor:"#10b981"},
+  {name:"Cosa Nostra", img:"images/cosa nostra.png", groupColor:"#22c55e"},
+  {name:"Triads", img:"images/triads.png", groupColor:"#22c55e"},
+  {name:"Mersedes-Benz", img:"images/mercedes-benz.png", groupColor:"#475569"},
+  {name:"Gucci", img:"images/gucci.png", groupColor:"#1d4ed8"},
   {name:"Task", img:"images/task(right).png"},
-  {name:"Nike", img:"images/nike.png"},
-  {name:"Adidas", img:"images/adidas.png"}
+  {name:"Nike", img:"images/nike.png", groupColor:"#1d4ed8"},
+  {name:"Adidas", img:"images/adidas.png", groupColor:"#1d4ed8"},
   ];
 
   const board = document.getElementById("board");

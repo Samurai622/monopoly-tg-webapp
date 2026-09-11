@@ -207,6 +207,17 @@ body {
 #payBtn { background: #ef4444; }
 #diceResult { margin-top: 10px; font-size: 16px; color: #38bdf8; font-weight: bold;}
 
+.color-bar {
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:22%;
+  border-bottom: 1px solid #334155;
+  z-index: 1;
+  opacity: 0.95;
+}
+
 /* =========================================
    АДАПТАЦІЯ ДЛЯ ПК (Широкі екрани) 
    ========================================= */
