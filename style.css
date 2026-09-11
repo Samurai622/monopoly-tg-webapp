@@ -11,34 +11,39 @@ body {
   overflow: hidden;
 }
 
-/* ===== ЛЕЙАУТ ===== */
+/* ===== ЛЕЙАУТ (Мобільний стиль за замовчуванням) ===== */
 #app {
   display: flex;
+  flex-direction: column; /* На телефоні елементи йдуть зверху вниз */
   width: 100vw;
   height: 100vh;
 }
 
 /* ===== ПАНЕЛЬ ГРАВЦІВ ===== */
 #players {
-  width: 260px;
+  width: 100%;
+  padding: 10px;
   background: #020617;
-  border-right: 2px solid #1e293b;
-  padding: 12px;
+  border-bottom: 2px solid #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto; /* Горизонтальна прокрутка на телефоні */
+  white-space: nowrap;
 }
 
 #players h2 {
-  text-align: center;
-  color: #38bdf8;
-  margin-bottom: 10px;
+  display: none; /* Ховаємо заголовок на телефоні для економії місця */
 }
 
 .player {
   border: 1px solid #334155;
   border-left: 6px solid gray;
-  padding: 8px;
+  padding: 8px 12px;
   border-radius: 6px;
-  margin-bottom: 8px;
   font-size: 13px;
+  min-width: 120px;
+  flex-shrink: 0; /* Щоб картки не стискалися */
 }
 
 .player.active {
@@ -49,90 +54,13 @@ body {
 .money {
   font-size: 12px;
   color: #a5b4fc;
-}
-
-/* ===== ЦЕНТР ===== */
-#game {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* ===== ДОШКА ===== */
-#board {
-  width: 90vmin;
-  height: 90vmin;
-  display: grid;
-  grid-template-columns: 2fr repeat(9, 1fr) 2fr;
-  grid-template-rows: 2fr repeat(9, 1fr) 2fr;
-  gap: 2px;
-}
-
-/* ===== КЛІТИНКИ ===== */
-.cell {
-  border: 1px solid #334155;
-  position: relative;
-  background-size: cover;
-  background-position: center;
-}
-
-/* ===== ЦЕНТР ===== */
-#center {
-  grid-column: 2 / 11;
-  grid-row: 2 / 11;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 28px;
-  color: #38bdf8;
-}
-
-/* ===== ФІШКИ ===== */
-.token {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-}
-
-.token.red { background: #ff4d4d; }
-.token.green { background: #4caf50; }
-.token.yellow { background: #ffeb3b; }
-.token.purple { background: #9c27b0; }
-.token.orange { background: #ff9800; }
-.token.brown { background: #795548; }
-.token.gray { background: #9e9e9e; }
-
-#controls {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  background: #020617;
-  border: 1px solid #334155;
-  padding: 10px;
-  border-radius: 8px;
-}
-
-#rollBtn {
-  padding: 8px 12px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-#diceResult {
-  margin-top: 6px;
-  font-size: 14px;
-  color: #38bdf8;
+  margin-top: 4px;
 }
 
 #actionPanel {
-  margin-top: 12px;
   display: flex;
   gap: 8px;
-  justify-content: center;
+  margin-left: auto; /* Притискаємо кнопки Здатися/Обмін вправо */
 }
 
 #actionPanel button {
@@ -145,33 +73,143 @@ body {
   cursor: pointer;
 }
 
-#actionPanel button:hover {
-  background: #082f49;
+/* ===== ЦЕНТР І ДОШКА ===== */
+#game {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 10px;
 }
 
-#endTurnBtn {
-  padding: 8px 12px;
-  font-size: 14px;
-  cursor: pointer;
-  background: #22c55e;
-  color: white;
-  border: none;
-  border-radius: 6px;
+#board {
+  width: 100%;
+  max-width: 400px; /* Обмеження для телефона */
+  aspect-ratio: 1 / 1;
+  display: grid;
+  grid-template-columns: 2fr repeat(9, 1fr) 2fr;
+  grid-template-rows: 2fr repeat(9, 1fr) 2fr;
+  gap: 2px;
 }
-#endTurnBtn:hover {
-  background: #16a34a;
+
+.cell {
+  border: 1px solid #334155;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+}
+
+#center {
+  grid-column: 2 / 11;
+  grid-row: 2 / 11;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 6vw; /* Адаптивний шрифт */
+  font-weight: bold;
+  color: #38bdf8;
+}
+
+/* ===== ФІШКИ ===== */
+.token {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  border: 1px solid white;
+}
+.token.red { background: #ff4d4d; }
+.token.green { background: #4caf50; }
+.token.yellow { background: #ffeb3b; }
+.token.purple { background: #9c27b0; }
+.token.orange { background: #ff9800; }
+.token.brown { background: #795548; }
+.token.gray { background: #9e9e9e; }
+
+/* ===== КНОПКИ УПРАВЛІННЯ (Кинути кубик, Купити тощо) ===== */
+#controls {
+  width: 100%;
+  max-width: 400px;
+  background: #0f172a;
+  border: 1px solid #334155;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+}
+
+#rollBtn, #endTurnBtn {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+#rollBtn { background: #0ea5e9; color: white; }
+#endTurnBtn { background: #22c55e; color: white; }
+
+#decisionPanel {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .action-btn {
-  padding: 8px 12px;
-  margin: 2px;
-  font-size: 13px;
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: bold;
   cursor: pointer;
   background: #0ea5e9;
   color: white;
   border: none;
   border-radius: 6px;
 }
-.action-btn:hover {
-  background: #0284c7;
+
+#payBtn { background: #ef4444; }
+#diceResult { margin-top: 10px; font-size: 16px; color: #38bdf8; font-weight: bold;}
+
+/* =========================================
+   АДАПТАЦІЯ ДЛЯ ПК (Широкі екрани) 
+   ========================================= */
+@media (min-width: 768px) {
+  #app {
+    flex-direction: row; /* На ПК сайдбар зліва, дошка справа */
+  }
+
+  #players {
+    width: 260px;
+    height: 100vh;
+    flex-direction: column; /* Гравці в стовпчик */
+    border-right: 2px solid #1e293b;
+    border-bottom: none;
+    align-items: stretch;
+    white-space: normal;
+  }
+
+  #players h2 { display: block; text-align: center; color: #38bdf8; margin-bottom: 10px; }
+  .player { min-width: auto; margin-bottom: 8px; }
+  #actionPanel { margin-left: 0; justify-content: center; margin-top: 12px; }
+
+  #board { max-width: 600px; } /* Дошка більша на ПК */
+  #center { font-size: 28px; }
+
+  #controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: auto;
+    margin-top: 0;
+  }
 }
