@@ -57,20 +57,47 @@ body {
   margin-top: 4px;
 }
 
+/* ===== ПАНЕЛЬ ДОДАТКОВИХ ДІЙ (Здатися / Обмін) ===== */
 #actionPanel {
   display: flex;
   gap: 8px;
-  margin-left: auto; /* Притискаємо кнопки Здатися/Обмін вправо */
+  margin-left: auto; /* Притискаємо вправо на мобільному */
+  align-items: center;
 }
 
 #actionPanel button {
-  padding: 6px 10px;
-  font-size: 13px;
-  background: #020617;
-  color: white;
-  border: 1px solid #334155;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
   border-radius: 6px;
   cursor: pointer;
+  background: rgba(15, 23, 42, 0.6); /* Легкий темний фон */
+  transition: all 0.2s ease-in-out;
+}
+
+/* Кнопка "Здатися" */
+#surrenderBtn {
+  border: 1px solid #ef4444; /* Червоний контур */
+  color: #ef4444;
+}
+
+#surrenderBtn:hover {
+  background: #ef4444;
+  color: white;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+/* Кнопка "Обмін" */
+#tradeBtn {
+  border: 1px solid #38bdf8; /* Блакитний контур */
+  color: #38bdf8;
+}
+
+#tradeBtn:hover {
+  background: #38bdf8;
+  color: #020617;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
 }
 
 /* ===== ЦЕНТР І ДОШКА ===== */
