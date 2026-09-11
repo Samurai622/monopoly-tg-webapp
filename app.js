@@ -134,7 +134,6 @@
       addToken(p.pos, p.active ? p.color : 'gray', index);
     });
 
-    updateRollButton();
     updateActionButtons();
   }
 
@@ -198,15 +197,6 @@
   function rand(min, max) {
       return Math.floor(Math.random() * (max - min + 1)) + min;
   }
-
-
-  function updateRollButton() {
-    rollBtn.style.display = 
-      (currentTurnId && String(currentTurnId) === String(myTgId))
-        ? "block"
-        : "none";
-  }
-
 
   function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
@@ -301,7 +291,6 @@
 
     renderPlayers();
     updateActionButtons();
-    updateRollButton();
 
     if (pendingRoom) {
       const r = pendingRoom;
@@ -373,7 +362,7 @@
     const auctionBtn = document.getElementById("auctionBtn");
     const payBtn = document.getElementById("payBtn");
 
-    // Ховаємо все за замовчуванням
+    // Спочатку ховаємо ВСЕ
     rollBtn.style.display = "none";
     endTurnBtn.style.display = "none";
     decisionPanel.style.display = "none";
@@ -381,19 +370,19 @@
     auctionBtn.style.display = "none";
     payBtn.style.display = "none";
 
-    // Показуємо потрібні кнопки залежно від стану
+    // Показуємо тільки те, що потрібно зараз
     if (canAct) {
       if (currentTurnState === 'waiting_roll') {
         rollBtn.style.display = "block";
       } else if (currentTurnState === 'can_end') {
         endTurnBtn.style.display = "block";
       } else if (currentTurnState === 'must_buy') {
-        decisionPanel.style.display = "block";
-        buyBtn.style.display = "inline-block";
-        auctionBtn.style.display = "inline-block";
+        decisionPanel.style.display = "flex"; // flex для гарного вирівнювання кнопок!
+        buyBtn.style.display = "block";
+        auctionBtn.style.display = "block";
       } else if (currentTurnState === 'must_pay') {
-        decisionPanel.style.display = "block";
-        payBtn.style.display = "inline-block";
+        decisionPanel.style.display = "flex";
+        payBtn.style.display = "block";
       }
     }
   }
