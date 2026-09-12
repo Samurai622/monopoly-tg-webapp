@@ -246,6 +246,12 @@ const tg = window.Telegram.WebApp;
         tg.showAlert(err.error || "Помилка ходу");
         return;
       }
+
+      const data = await r.json();
+      if(data.bonus > 0) {
+        tg.showAlert(`🎁 Ви отримали бонус: $${data.bonus}`);
+      }
+      
       await syncRoom();
     } finally {
       isRolling = false;
