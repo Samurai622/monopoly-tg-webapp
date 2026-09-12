@@ -18,84 +18,93 @@ const tg = window.Telegram.WebApp;
   let isAnimatingMove = false;
   let pendingRoom = null;
 
-  /* Масив клітинок з назвами і фон-картинками */
+  /* Масив клітинок із ПРОРАХОВАНОЮ економікою */
   const cellsData = [
-  {name:"Start", img:"images/start.png"},
-  {name:"Marvel", img:"images/marvel.png", groupColor:"#9333ea"},
-  {name:"Pixar", img:"images/pixar.png", groupColor:"#9333ea"},
-  {name:"Task", img:"images/task(down).png"},
-  {name:"GiveUser", img:"images/giveuser.png"},
-  {name:"Audi", img:"images/audi.png", groupColor:"#475569"},
-  {name:"Sprite", img:"images/sprite.png", groupColor:"#38bdf8"},
-  {name:"Fanta", img:"images/fanta.png", groupColor:"#38bdf8"},
-  {name:"Minecraft", img:"images/minecraft.png", groupColor:"#10b981"},
-  {name:"CocaCola", img:"images/cocacola.png", groupColor:"#38bdf8"},
-
-  {name:"Casino", img:"images/casino.png"},
-  {name:"Starbucks", img:"images/starbucks.png", groupColor:"#db2777"},
-  {name:"Task", img:"images/task(left).png"},
-  {name:"Blue Bottle Coffee", img:"images/bluebottlecoffee.png", groupColor:"#db2777"},
-  {name:"Lavazza", img:"images/lavazza.png", groupColor:"#db2777"},
-  {name:"BMW", img:"images/bmw.png", groupColor:"#475569"},
-  {name:"McDonalds", img:"images/mcdonalds.png", groupColor:"#f97316"},
-  {name:"KFS", img:"images/kfs.png", groupColor:"#f97316"},
-  {name:"Task", img:"images/task(left).png"},
-  {name:"Pizza Hut", img:"images/pizza hut.png", groupColor:"#f97316"},
-
-  {name:"Jail", img:"images/jail.png"},
-  {name:"Telegram", img:"images/telegram.png", groupColor:"#ef4444"},
-  {name:"WhatsApp", img:"images/whatsapp.png", groupColor:"#ef4444"},
-  {name:"Instagram", img:"images/instagram.png", groupColor:"#ef4444"},
-  {name:"Task", img:"images/task(down).png"},
-  {name:"Lamborghini", img:"images/lamborghini.png", groupColor:"#475569"},
-  {name:"Give to bank", img:"images/givebank.png"},
-  {name:"Apple", img:"images/apple.png", groupColor:"#eab308"},
-  {name:"Task", img:"images/task(down).png"},
-  {name:"PlayStation", img:"images/ps.png", groupColor:"#eab308"},
-
-  {name:"GoJail", img:"images/gojail.png",},
-  {name:"Yakuza", img:"images/yakuza.png", groupColor:"#22c55e"},
-  {name:"Assassin's Creed", img:"images/ac.png", groupColor:"#10b981"},
-  {name:"Cosa Nostra", img:"images/cosa nostra.png", groupColor:"#22c55e"},
-  {name:"Triads", img:"images/triads.png", groupColor:"#22c55e"},
-  {name:"Mersedes-Benz", img:"images/mercedes-benz.png", groupColor:"#475569"},
-  {name:"Gucci", img:"images/gucci.png", groupColor:"#1d4ed8"},
-  {name:"Task", img:"images/task(right).png"},
-  {name:"Nike", img:"images/nike.png", groupColor:"#1d4ed8"},
-  {name:"Adidas", img:"images/adidas.png", groupColor:"#1d4ed8"},
+    {name:"Start", img:"images/start.png"},
+    {name:"Marvel", img:"images/marvel.png", groupColor: "#9333ea", price: 120, rent: 12}, 
+    {name:"Pixar", img:"images/pixar.png", groupColor: "#9333ea", price: 120, rent: 12},
+    {name:"Task", img:"images/task(down).png"},
+    {name:"GiveUser", img:"images/giveuser.png"}, 
+    {name:"Audi", img:"images/audi.png", groupColor: "#475569", price: 1000, rent: 50, isAuto: true}, 
+    {name:"Sprite", img:"images/sprite.png", groupColor: "#38bdf8", price: 250, rent: 25}, 
+    {name:"Fanta", img:"images/fanta.png", groupColor: "#38bdf8", price: 220, rent: 22}, 
+    {name:"Minecraft", img:"images/minecraft.png", groupColor: "#10b981", price: 500, rent: 30}, 
+    {name:"CocaCola", img:"images/cocacola.png", groupColor: "#38bdf8", price: 190, rent: 19}, 
+    
+    {name:"Casino", img:"images/casino.png"}, 
+    
+    {name:"Starbucks", img:"images/starbucks.png", groupColor: "#db2777", price: 420, rent: 42}, 
+    {name:"Task", img:"images/task(left).png"},
+    {name:"Blue Bottle Coffee", img:"images/bluebottlecoffee.png", groupColor: "#db2777", price: 340, rent: 34},
+    {name:"Lavazza", img:"images/lavazza.png", groupColor: "#db2777", price: 380, rent: 38},
+    {name:"BMW", img:"images/bmw.png", groupColor: "#475569", price: 1000, rent: 50, isAuto: true}, 
+    {name:"McDonalds", img:"images/mcdonalds.png", groupColor: "#f97316", price: 260, rent: 26}, 
+    {name:"KFS", img:"images/kfs.png", groupColor: "#f97316", price: 220, rent: 22},
+    {name:"Task", img:"images/task(left).png"},
+    {name:"Pizza Hut", img:"images/pizza hut.png", groupColor: "#f97316", price: 200, rent: 20},
+    
+    {name:"Free Parking", img:"images/freeparking.png"}, 
+    
+    {name:"Telegram", img:"images/telegram.png", groupColor: "#ef4444", price: 420, rent: 42}, 
+    {name:"WhatsApp", img:"images/whatsapp.png", groupColor: "#ef4444", price: 380, rent: 38},
+    {name:"Instagram", img:"images/instagram.png", groupColor: "#ef4444", price: 400, rent: 40},
+    {name:"Task", img:"images/task(down).png"},
+    {name:"Lamborghini", img:"images/lamborghini.png", groupColor: "#475569", price: 1000, rent: 50, isAuto: true}, 
+    {name:"Give to bank", img:"images/givebank.png"}, 
+    {name:"Apple", img:"images/apple.png", groupColor: "#eab308", price: 600, rent: 40}, 
+    {name:"Task", img:"images/task(down).png"},
+    {name:"PlayStation", img:"images/ps.png", groupColor: "#eab308", price: 580, rent: 38},
+    
+    {name:"GoJail", img:"images/gojail.png"},
+    
+    {name:"Yakuza", img:"images/yakuza.png", groupColor: "#22c55e", price: 300, rent: 30}, 
+    {name:"Assassin's Creed", img:"images/ac.png", groupColor: "#10b981", price: 500, rent: 30},
+    {name:"Cosa Nostra", img:"images/cosa nostra.png", groupColor: "#22c55e", price: 320, rent: 32},
+    {name:"Triads", img:"images/triads.png", groupColor: "#22c55e", price: 350, rent: 35},
+    {name:"Mersedes-Benz", img:"images/mercedes-benz.png", groupColor: "#475569", price: 1000, rent: 50, isAuto: true}, 
+    {name:"Gucci", img:"images/gucci.png", groupColor: "#1d4ed8", price: 350, rent: 35}, 
+    {name:"Task", img:"images/task(right).png"},
+    {name:"Nike", img:"images/nike.png", groupColor: "#1d4ed8", price: 400, rent: 40},
+    {name:"Adidas", img:"images/adidas.png", groupColor: "#1d4ed8", price: 400, rent: 40}
   ];
 
   const board = document.getElementById("board");
   const cells = [];
+  let currentProperties = []; // Куплені ділянки
 
-
+  // ГЕНЕРАЦІЯ ПОЛЯ
   cellsData.forEach((data, i) => {
     const cell = document.createElement("div");
     cell.className = `cell`;
     cell.dataset.id = i;
-    cell.style.backgroundImage = `url('${data.img}')`; // фонова картинка
+    cell.style.backgroundImage = `url('${data.img}')`; 
     
-    // Додаємо кольорову смужку, яка "дивиться" в центр
+    // Смужка групи
     if (data.groupColor) {
       const colorBar = document.createElement("div");
       colorBar.style.backgroundColor = data.groupColor;
       
-      if (i >= 0 && i <= 10) {
-        // Нижній ряд (0-10) -> смужка зверху
-        colorBar.className = "color-bar bar-top"; 
-      } else if (i > 10 && i < 20) {
-        // Лівий ряд (11-19) -> смужка справа
-        colorBar.className = "color-bar bar-right"; 
-      } else if (i >= 20 && i <= 30) {
-        // Верхній ряд (20-30) -> смужка знизу
-        colorBar.className = "color-bar bar-bottom"; 
-      } else {
-        // Правий ряд (31-39) -> смужка зліва
-        colorBar.className = "color-bar bar-left"; 
-      }
+      if (i >= 0 && i <= 10) colorBar.className = "color-bar bar-top"; 
+      else if (i > 10 && i < 20) colorBar.className = "color-bar bar-right"; 
+      else if (i >= 20 && i <= 30) colorBar.className = "color-bar bar-bottom"; 
+      else colorBar.className = "color-bar bar-left"; 
       
       cell.appendChild(colorBar);
     }
+
+    // Цінник
+    if (data.price) {
+      const priceTag = document.createElement("div");
+      priceTag.id = `price-${i}`;
+      priceTag.className = "cell-price price-buy";
+      priceTag.innerText = `$${data.price}`;
+      cell.appendChild(priceTag);
+    }
+
+    // Клік по клітинці
+    cell.addEventListener("click", () => {
+      if (data.price) openCellInfo(data);
+    });
 
     cells.push(cell);
     board.appendChild(cell);
@@ -104,26 +113,15 @@ const tg = window.Telegram.WebApp;
   /* Розкладка клітинок по 11x11 */
   cells.forEach((cell, i) => {
     let row, col;
-
-    if (i <= 10) {             // низ
-        row = 11;
-        col = 11 - i;
-    } else if (i <= 20) {      // ліво
-        row = 21 - i;
-        col = 1;
-    } else if (i <= 30) {      // верх
-        row = 1;
-        col = i - 19;
-    } else {                   // право
-        row = i - 29;
-        col = 11;
-    }
-
+    if (i <= 10) { row = 11; col = 11 - i; } 
+    else if (i <= 20) { row = 21 - i; col = 1; } 
+    else if (i <= 30) { row = 1; col = i - 19; } 
+    else { row = i - 29; col = 11; }
     cell.style.gridRow = row;
     cell.style.gridColumn = col;
   });
-  let players = [
-  ]
+
+  let players = [];
   let myPlayerIndex = -1;
   const playersBox = document.getElementById("players");
   const rollBtn = document.getElementById("rollBtn");
@@ -131,11 +129,58 @@ const tg = window.Telegram.WebApp;
   let currentTurn = 0;
   let currentTurnId = null;
   let currentTurnState = 'waiting_roll';
+  let isRolling = false;
+
+  // ОНОВЛЕННЯ ЦІННИКІВ
+  function updateBoardPrices() {
+    cellsData.forEach((data, i) => {
+      if (!data.price) return;
+      const priceTag = document.getElementById(`price-${i}`);
+      if (!priceTag) return;
+
+      const isOwned = currentProperties.find(p => p.cell_id === i);
+      
+      if (isOwned) {
+        priceTag.innerText = `Оренда: $${data.rent}`;
+        priceTag.className = "cell-price price-rent";
+      } else {
+        priceTag.innerText = `$${data.price}`;
+        priceTag.className = "cell-price price-buy";
+      }
+    });
+  }
+
+  // ВІДДКРИТТЯ МОДАЛЬНОГО ВІКНА
+  function openCellInfo(data) {
+    document.getElementById("modalHeader").style.backgroundColor = data.groupColor || "#334155";
+    document.getElementById("modalTitle").innerText = data.name;
+    document.getElementById("modalPrice").innerText = `$${data.price}`;
+    
+    if (data.isAuto) {
+      document.getElementById("modalRent").innerText = `$${data.rent} (за 1 авто)`;
+      document.getElementById("modalRent1").innerText = `$${data.rent * 2} (за 2 авто)`;
+      document.getElementById("modalRent2").innerText = `$${data.rent * 4} (за 3 авто)`;
+      document.getElementById("modalRent3").innerText = `$${data.rent * 8} (за 4 авто)`;
+      document.getElementById("modalRent4").innerText = `-`;
+      document.getElementById("modalRentMax").innerText = `-`;
+    } else {
+      document.getElementById("modalRent").innerText = `$${data.rent}`;
+      document.getElementById("modalRent1").innerText = `$${data.rent * 3}`;
+      document.getElementById("modalRent2").innerText = `$${data.rent * 8}`;
+      document.getElementById("modalRent3").innerText = `$${data.rent * 15}`;
+      document.getElementById("modalRent4").innerText = `$${data.rent * 25}`;
+      document.getElementById("modalRentMax").innerText = `$${data.rent * 40}`;
+    }
+
+    document.getElementById("cellModal").style.display = "flex";
+  }
+
+  document.getElementById("closeModalBtn").addEventListener("click", () => {
+    document.getElementById("cellModal").style.display = "none";
+  });
 
   function renderPlayers() {
     playersBox.querySelectorAll(".player").forEach(p => p.remove());
-    diceResult.innerText = "";
-
     document.querySelectorAll(".token").forEach(t => t.remove());
 
     players.forEach((p, i) => {
@@ -149,7 +194,6 @@ const tg = window.Telegram.WebApp;
         <b>${p.name}</b>
         <div class="money">💰 ${p.money}</div>
         `;
-
       playersBox.appendChild(div);
 
       const sameCellPlayers = players.filter(pl => pl.pos === p.pos);
@@ -160,129 +204,80 @@ const tg = window.Telegram.WebApp;
     updateActionButtons();
   }
 
-  /* Тестові фішки */
   function addToken(cellId, color, indexInCell) {
-  const cell = document.querySelector(`[data-id='${cellId}']`);
-  if (!cell) return;
-
-  const token = document.createElement("div");
-  token.className = `token ${color}`;
-
-  const offset = indexInCell * 8;
-  token.style.left = offset + "px";
-  token.style.top = offset + "px";
-
-  cell.appendChild(token);
+    const cell = document.querySelector(`[data-id='${cellId}']`);
+    if (!cell) return;
+    const token = document.createElement("div");
+    token.className = `token ${color}`;
+    const offset = indexInCell * 8;
+    token.style.left = offset + "px";
+    token.style.top = offset + "px";
+    cell.appendChild(token);
   }
 
-  rollBtn.addEventListener("click", rollDice);
-  let isRolling = false;
+  function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+  function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-  async function rollDice() {
-    if (isRolling) {
-      return;
-    }
-    
-
-    if(!currentTurnId) return;
-    if (currentTurnState !== 'waiting_roll') return;
-    if(String(currentTurnId) !== String(myTgId)) return;
-
+  rollBtn.addEventListener("click", async () => {
+    if (isRolling || !currentTurnId || currentTurnState !== 'waiting_roll' || String(currentTurnId) !== String(myTgId)) return;
     isRolling = true;
     try {
       const d1 = rand(1,6);
       const d2 = rand(1,6);
       const steps = d1 + d2;
-
       diceResult.innerText = `🎲 ${d1} + ${d2} = ${steps}`;
+      
       const r = await fetch(`${API}/room/${chatId}/move`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          playerId: Number(myTgId),
-          steps
-        })
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId: Number(myTgId), steps })
       });
 
-
       if (!r.ok) {
-        const t = await r.text().catch(() => '');
+        const err = await r.json().catch(() => ({}));
+        tg.showAlert(err.error || "Помилка ходу");
         return;
       }
-
       await syncRoom();
     } finally {
       isRolling = false;
     }
-  }
-
-
-  function rand(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
-  function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-  }
+  });
 
   async function connectToServer() {
     try {
       await fetch(`${API}/room/${chatId}/join`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          id: String(myTgId),
-          name: tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name
-        })
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ id: String(myTgId), name: tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name })
       });
     } catch (e) {}
 
     const res = await fetch(`${API}/room/${chatId}/state`);
     if(!res.ok) {
-      document.body.innerHTML = `
-      <h1 style="text-align:center;margin-top:50px;">
-        ⛔ Гру завершено
-        </h1>
-        <p style="text-align:center;">Поверніться до Telegram</p>
-        `;
-        return;
+      document.body.innerHTML = `<h1 style="text-align:center;margin-top:50px;">⛔ Гру завершено</h1>`;
+      return;
     }
-
     const room = await res.json();
     await applyRoom(room);
   }
-
 
   async function syncRoom() {
     try {
       const res = await fetch(`${API}/room/${chatId}/state`);
       if(!res.ok) return;
-
       const room = await res.json();
 
-      // Якщо гра закінчилась, показуємо екран переможця
       if (room.status === 'stopped') {
         document.body.innerHTML = `
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#020617;color:white;width:100vw;">
-            <h1 style="font-size:32px;margin-bottom:10px;">⛔ Гру завершено</h1>
-            <h2 style="color:#38bdf8;font-size:28px;">🏆 Переміг: ${room.winnerName || 'Невідомо'}</h2>
-            <p style="margin-top:20px;color:#94a3b8;">Поверніться до Telegram</p>
-        </div>
-        `;
-        return; // Зупиняємо подальше виконання
-      }
-
-      if (!room.players) return;
-
-      if (isAnimatingMove) {
-        pendingRoom = room;
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#020617;color:white;">
+            <h1>⛔ Гру завершено</h1>
+            <h2 style="color:#38bdf8;">🏆 Переміг: ${room.winnerName || 'Невідомо'}</h2>
+        </div>`;
         return;
       }
-
+      if (!room.players) return;
+      if (isAnimatingMove) { pendingRoom = room; return; }
       await applyRoom(room);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   }
 
   async function applyRoom(room) {
@@ -292,6 +287,8 @@ const tg = window.Telegram.WebApp;
       currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
       myPlayerIndex = players.findIndex(p => p.id === Number(myTgId));
       currentTurnState = room.turnState || 'waiting_roll';
+      currentProperties = room.properties || [];
+      updateBoardPrices();
       renderPlayers();
       return;
     }
@@ -302,6 +299,8 @@ const tg = window.Telegram.WebApp;
     currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
     myPlayerIndex = players.findIndex(p => p.id === Number(myTgId));
     currentTurnState = room.turnState || 'waiting_roll';
+    currentProperties = room.properties || [];
+    
     for (const sp of room.players) {
       const p = players.find(pl => pl.id === Number(sp.id));
       if (!p) continue;
@@ -312,8 +311,8 @@ const tg = window.Telegram.WebApp;
     }
     isAnimatingMove = false;
 
+    updateBoardPrices();
     renderPlayers();
-    updateActionButtons();
 
     if (pendingRoom) {
       const r = pendingRoom;
@@ -321,7 +320,6 @@ const tg = window.Telegram.WebApp;
       await applyRoom(r);
     }
   }
-
 
   async function animateTo(serverPlayers) {
     for (const sp of serverPlayers) {
@@ -338,34 +336,7 @@ const tg = window.Telegram.WebApp;
     }
   }
 
-  const surrenderBtn = document.getElementById('surrenderBtn');
-
-  surrenderBtn.addEventListener('click', () => {
-    if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
-
-    tg.showConfirm("Ви дійсно хочете здатися?", async (confirmed) => {
-      if (!confirmed) return;
-
-      try {
-        await fetch(`${API}/room/${chatId}/surrender`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ playerId: myTgId})
-        });
-
-        await syncRoom();
-      } catch (e) {
-        console.error("Помилка здачі:", e);
-      }
-    });
-  });
-
-  const tradeBtn = document.getElementById('tradeBtn');
-
-  tradeBtn.addEventListener('click', () => {
-    alert("В розробці");
-  });
-
+  // КНОПКИ ДІЙ
   function updateActionButtons() {
     const me = players[myPlayerIndex];
     if(!me) return;
@@ -373,11 +344,9 @@ const tg = window.Telegram.WebApp;
     const isMyTurn = currentTurnId && String(currentTurnId) === String(myTgId);
     const canAct = isMyTurn && me.active;
 
-    // Панель гравця
-    surrenderBtn.style.display = me.active ? "inline-block" : "none";
-    tradeBtn.style.display = canAct ? "inline-block" : "none";
+    document.getElementById("surrenderBtn").style.display = me.active ? "inline-block" : "none";
+    document.getElementById("tradeBtn").style.display = canAct ? "inline-block" : "none";
 
-    // Панель ходу
     const rollBtn = document.getElementById("rollBtn");
     const endTurnBtn = document.getElementById("endTurnBtn");
     const decisionPanel = document.getElementById("decisionPanel");
@@ -385,7 +354,6 @@ const tg = window.Telegram.WebApp;
     const auctionBtn = document.getElementById("auctionBtn");
     const payBtn = document.getElementById("payBtn");
 
-    // Спочатку ховаємо ВСЕ
     rollBtn.style.display = "none";
     endTurnBtn.style.display = "none";
     decisionPanel.style.display = "none";
@@ -393,49 +361,81 @@ const tg = window.Telegram.WebApp;
     auctionBtn.style.display = "none";
     payBtn.style.display = "none";
 
-    // Показуємо тільки те, що потрібно зараз
     if (canAct) {
       if (currentTurnState === 'waiting_roll') {
         rollBtn.style.display = "block";
       } else if (currentTurnState === 'can_end') {
         endTurnBtn.style.display = "block";
       } else if (currentTurnState === 'must_buy') {
-        decisionPanel.style.display = "flex"; // flex для гарного вирівнювання кнопок!
+        decisionPanel.style.display = "flex";
         buyBtn.style.display = "block";
         auctionBtn.style.display = "block";
       } else if (currentTurnState === 'must_pay') {
         decisionPanel.style.display = "flex";
         payBtn.style.display = "block";
+      } else if (currentTurnState === 'casino_action') {
+        // Тимчасово дозволяємо завершити хід у казино
+        endTurnBtn.style.display = "block";
+        diceResult.innerText = "🎰 Ставки поки що не працюють. Завершуй хід.";
       }
     }
   }
 
-  // Кнопка Завершити хід
-  document.getElementById('endTurnBtn').addEventListener('click', async () => {
+  document.getElementById('buyBtn').addEventListener('click', async () => {
     if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
-    
     try {
-      await fetch(`${API}/room/${chatId}/end_turn`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+      const r = await fetch(`${API}/room/${chatId}/buy`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId: myTgId })
+      });
+      if(!r.ok) {
+          const err = await r.json();
+          tg.showAlert(err.error || "Помилка при покупці.");
+          return;
+      }
+      await syncRoom();
+    } catch (e) { console.error(e); }
+  });
+
+  document.getElementById('auctionBtn').addEventListener('click', async () => {
+    if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
+    try {
+      const r = await fetch(`${API}/room/${chatId}/skip_buy`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
       await syncRoom();
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) { console.error(e); }
   });
 
-  // Заглушки для майбутніх функцій (наступний крок)
-  document.getElementById('buyBtn').addEventListener('click', () => {
-    alert("Запит на покупку! (Зробимо на сервері в наступному кроці)");
+  document.getElementById('endTurnBtn').addEventListener('click', async () => {
+    if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
+    try {
+      await fetch(`${API}/room/${chatId}/end_turn`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId: myTgId })
+      });
+      diceResult.innerText = "";
+      await syncRoom();
+    } catch (e) { console.error(e); }
   });
-  document.getElementById('auctionBtn').addEventListener('click', () => {
-    alert("Відкриваємо аукціон! (Скоро...)");
+
+  document.getElementById('surrenderBtn').addEventListener('click', () => {
+    if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
+    tg.showConfirm("Ви дійсно хочете здатися?", async (confirmed) => {
+      if (!confirmed) return;
+      try {
+        await fetch(`${API}/room/${chatId}/surrender`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ playerId: myTgId})
+        });
+        await syncRoom();
+      } catch (e) { console.error(e); }
+    });
   });
-  document.getElementById('payBtn').addEventListener('click', () => {
-    alert("Оплачуємо борг! (Зробимо на сервері в наступному кроці)");
-  });
+
+  document.getElementById('tradeBtn').addEventListener('click', () => alert("В розробці"));
+  document.getElementById('payBtn').addEventListener('click', () => alert("Оплата скоро буде"));
 
   connectToServer();
   setInterval(syncRoom, 2000);
