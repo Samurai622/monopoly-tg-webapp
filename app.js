@@ -444,7 +444,25 @@ const tg = window.Telegram.WebApp;
   });
 
   document.getElementById('tradeBtn').addEventListener('click', () => alert("В розробці"));
-  document.getElementById('payBtn').addEventListener('click', () => alert("Оплата скоро буде"));
+  document.getElementById('payBtn').addEventListener('click', async () => {
+    if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
+    try {
+      const r = await fetch(`${API}/room/${chatId}/pay`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId: myTgId })
+      });
+      if(!r.ok) {
+          const err = await r.json();
+          tg.showAlert(err.error || "Помилка при оплаті.");
+          return;
+      }
+      
+      const data = await r.json();
+      tg.showAlert(`Ви успішно заплатили $${data.amountToPay}`);
+      
+      await syncRoom();
+    } catch (e) { console.error(e); }
+  });
 
   connectToServer();
   setInterval(syncRoom, 2000);
