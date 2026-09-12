@@ -43,7 +43,7 @@ const tg = window.Telegram.WebApp;
     {name:"Task", img:"images/task(left).png"},
     {name:"Pizza Hut", img:"images/pizza hut.png", groupColor: "#f97316", price: 200, rent: 20},
     
-    {name:"Free Parking", img:"images/freeparking.png"}, 
+    {name:"Free Parking", img:"images/jail.png"}, 
     
     {name:"Telegram", img:"images/telegram.png", groupColor: "#ef4444", price: 420, rent: 42}, 
     {name:"WhatsApp", img:"images/whatsapp.png", groupColor: "#ef4444", price: 380, rent: 38},
@@ -70,9 +70,9 @@ const tg = window.Telegram.WebApp;
 
   const board = document.getElementById("board");
   const cells = [];
-  let currentProperties = []; // Куплені ділянки
+  let currentProperties = [];
 
-  // ГЕНЕРАЦІЯ ПОЛЯ
+
   cellsData.forEach((data, i) => {
     const cell = document.createElement("div");
     cell.className = `cell`;
@@ -80,8 +80,9 @@ const tg = window.Telegram.WebApp;
     cell.style.backgroundImage = `url('${data.img}')`; 
     
     // Смужка групи
+    let colorBar = null;
     if (data.groupColor) {
-      const colorBar = document.createElement("div");
+      colorBar = document.createElement("div");
       colorBar.style.backgroundColor = data.groupColor;
       
       if (i >= 0 && i <= 10) colorBar.className = "color-bar bar-top"; 
@@ -92,18 +93,26 @@ const tg = window.Telegram.WebApp;
       cell.appendChild(colorBar);
     }
 
-    // Цінник
+    // Цінник (додаємо його ВСЕРЕДИНУ смужки, якщо вона є, або просто на клітинку)
     if (data.price) {
       const priceTag = document.createElement("div");
       priceTag.id = `price-${i}`;
       priceTag.className = "cell-price price-buy";
       priceTag.innerText = `$${data.price}`;
-      cell.appendChild(priceTag);
+      
+      if (colorBar) {
+        colorBar.appendChild(priceTag); // Якщо є смужка - ціна на ній
+      } else {
+        priceTag.style.bottom = "2px";
+        priceTag.style.left = "50%";
+        priceTag.style.transform = "translateX(-50%)";
+        cell.appendChild(priceTag);
+      }
     }
 
     // Клік по клітинці
     cell.addEventListener("click", () => {
-      if (data.price) openCellInfo(data);
+      if (data.price || data.isAuto) openCellInfo(data);
     });
 
     cells.push(cell);
