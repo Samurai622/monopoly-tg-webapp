@@ -150,7 +150,7 @@ const tg = window.Telegram.WebApp;
       const isOwned = currentProperties.find(p => p.cell_id === i);
       
       if (isOwned) {
-        priceTag.innerText = `Оренда: $${data.rent}`;
+        priceTag.innerText = `$${data.rent}`;
         priceTag.className = "cell-price price-rent";
       } else {
         priceTag.innerText = `$${data.price}`;
