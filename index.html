@@ -54,6 +54,32 @@
       </div>
     </div>
   </div>
+
+  <!-- Вікно Аукціону -->
+  <div id="auctionModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="border-color: #f59e0b;">
+      <h2 style="color: #f59e0b; margin-top: 15px;">🔨 Аукціон</h2>
+      <h3 id="auctionItemName" style="margin-bottom: 5px;">Назва Фірми</h3>
+      
+      <div class="modal-body" style="text-align: center;">
+        <p style="justify-content: center; font-size: 16px;">
+          Поточна ціна: &nbsp;<b id="auctionCurrentPrice" style="color:#4ade80; font-size: 18px;">$0</b>
+        </p>
+        <p style="justify-content: center; color: #94a3b8; font-size: 12px;">
+          Лідер: <b id="auctionLeader" style="margin-left: 5px; color: white;">Немає</b>
+        </p>
+        
+        <hr style="border-color: #334155; margin: 15px 0;">
+        
+        <input type="number" id="auctionBidInput" placeholder="Введіть вашу суму..." class="auction-input">
+        
+        <div style="display:flex; gap:10px; margin-top:15px;">
+          <button id="auctionMakeBidBtn" class="action-btn" style="background:#22c55e;">Поставити</button>
+          <button id="auctionPassBtn" class="action-btn" style="background:#ef4444;">Пас (Вийти)</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="./app.js"></script>
 </body>
 
