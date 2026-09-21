@@ -128,15 +128,26 @@ const tg = window.Telegram.WebApp;
   let currentTurnState = 'waiting_roll';
   let isRolling = false;
 
+  // МАЛЮЄМО РАМКИ ВЛАСНИКІВ
   function updateBoardPrices() {
+    document.querySelectorAll('.cell').forEach(c => c.style.boxShadow = '');
+
     cellsData.forEach((data, i) => {
       if (!data.price) return;
       const priceTag = document.getElementById(`price-${i}`);
       if (!priceTag) return;
-      const isOwned = currentProperties.find(p => p.cell_id === i);
-      if (isOwned) {
+      
+      const property = currentProperties.find(p => p.cell_id === i);
+      
+      if (property) {
         priceTag.innerText = `$${data.rent}`;
         priceTag.className = "cell-price price-rent";
+        
+        const owner = players.find(p => p.db_id === property.owner_id);
+        if (owner) {
+          const cell = document.querySelector(`[data-id='${i}']`);
+          if (cell) cell.style.boxShadow = `inset 0 0 0 4px ${owner.color}`;
+        }
       } else {
         priceTag.innerText = `$${data.price}`;
         priceTag.className = "cell-price price-buy";
@@ -191,16 +202,22 @@ const tg = window.Telegram.WebApp;
     });
 
     updateActionButtons();
-    updateAuctionUI(); // ОНОВЛЮЄМО ВІКНО АУКЦІОНУ
+    updateAuctionUI(); 
   }
 
+  // ОНОВЛЕНІ ФІШКИ (Більше не зникають)
   function addToken(cellId, color, indexInCell) {
     const cell = document.querySelector(`[data-id='${cellId}']`);
     if (!cell) return;
     const token = document.createElement("div");
-    token.className = `token ${color}`;
-    const offset = indexInCell * 8;
-    token.style.left = offset + "px"; token.style.top = offset + "px";
+    token.className = `token`;
+    token.style.backgroundColor = color;
+    
+    const offsetX = 4 + (indexInCell % 2) * 14; 
+    const offsetY = 4 + Math.floor(indexInCell / 2) * 14;
+    
+    token.style.left = offsetX + "px"; token.style.top = offsetY + "px";
+    token.style.zIndex = "20";
     cell.appendChild(token);
   }
 
@@ -319,7 +336,6 @@ const tg = window.Telegram.WebApp;
     }
   }
 
-  // КНОПКИ ДІЙ
   function updateActionButtons() {
     const me = players[myPlayerIndex];
     if(!me) return;
@@ -360,14 +376,16 @@ const tg = window.Telegram.WebApp;
 
     if (currentTurnState === 'auction' && me) {
       auctionModal.style.display = "flex";
-      
       document.getElementById("auctionCurrentPrice").innerText = `$${auctionData.price}`;
       
       const leader = players.find(p => p.db_id === auctionData.winnerId);
-      document.getElementById("auctionLeader").innerText = leader ? leader.name : "Немає";
+      document.getElementById("auctionLeader").innerText = leader ? leader.name : "Поки нікого";
       
       const amIPassed = auctionData.passed.includes(me.db_id);
       const amILeader = (me.db_id === auctionData.winnerId);
+      
+      const activePlayersCount = players.filter(p => p.active).length;
+      const amILastOne = (auctionData.passed.length >= activePlayersCount - 1) && !amIPassed;
       
       const bidInput = document.getElementById("auctionBidInput");
       const makeBidBtn = document.getElementById("auctionMakeBidBtn");
@@ -380,19 +398,27 @@ const tg = window.Telegram.WebApp;
 
       if (amIPassed) {
         bidInput.style.display = "none"; makeBidBtn.style.display = "none"; passBtn.style.display = "none";
-        itemName.innerText = "❌ Ви вийшли з торгів. Чекаємо інших...";
+        itemName.innerText = "❌ Ви не берете участі у торгах.";
       } else if (amILeader) {
         bidInput.style.display = "none"; makeBidBtn.style.display = "none"; passBtn.style.display = "none";
-        itemName.innerText = "👑 Ви лідер! Чекаємо хід суперників...";
+        itemName.innerText = "👑 Ваша ставка найвища!";
+      } else if (amILastOne && auctionData.winnerId === null) {
+        bidInput.style.display = "none"; makeBidBtn.style.display = "block"; passBtn.style.display = "block";
+        itemName.innerText = "Суперник відмовився. Берете?";
+        makeBidBtn.innerText = `Купити за $${auctionData.price}`;
+        passBtn.innerText = "Відмовитись";
+        makeBidBtn.dataset.exactBid = auctionData.price; 
       } else {
         bidInput.style.display = "block"; makeBidBtn.style.display = "block"; passBtn.style.display = "block";
+        makeBidBtn.innerText = "Поставити"; passBtn.innerText = "Пас (Вийти)";
+        bidInput.placeholder = `Більше $${auctionData.price}...`;
+        makeBidBtn.dataset.exactBid = ""; 
       }
     } else {
       auctionModal.style.display = "none";
     }
   }
 
-  // КНОПКА "АУКЦІОН" ТЕПЕР ЗАПУСКАЄ ТОРГИ
   document.getElementById('auctionBtn').addEventListener('click', async () => {
     if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
     try {
@@ -400,21 +426,21 @@ const tg = window.Telegram.WebApp;
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
-      if(!r.ok) {
-          const err = await r.json();
-          tg.showAlert(err.error || "Помилка сервера"); return;
-      }
+      if(!r.ok) { const err = await r.json(); tg.showAlert(err.error || "Помилка сервера"); return; }
       await syncRoom();
     } catch (e) { console.error(e); }
   });
 
-  // ЗРОБИТИ СТАВКУ
-  document.getElementById('auctionMakeBidBtn').addEventListener('click', async () => {
-    const input = document.getElementById('auctionBidInput');
-    const amount = Number(input.value);
-    
-    if (!amount || amount <= auctionData.price) {
-      tg.showAlert("Ставка має бути більшою за поточну ціну!"); return;
+  document.getElementById('auctionMakeBidBtn').addEventListener('click', async (e) => {
+    let amount;
+    if (e.target.dataset.exactBid) {
+      amount = Number(e.target.dataset.exactBid);
+    } else {
+      const input = document.getElementById('auctionBidInput');
+      amount = Number(input.value);
+      if (!amount || amount <= auctionData.price) {
+        tg.showAlert("Ставка має бути більшою за поточну ціну!"); return;
+      }
     }
     
     try {
@@ -422,24 +448,19 @@ const tg = window.Telegram.WebApp;
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId, amount })
       });
-      if (!r.ok) {
-        const err = await r.json(); tg.showAlert(err.error || "Помилка ставки"); return;
-      }
-      input.value = '';
+      if (!r.ok) { const err = await r.json(); tg.showAlert(err.error || "Помилка ставки"); return; }
+      document.getElementById('auctionBidInput').value = '';
       await syncRoom();
-    } catch (e) { console.error(e); }
+    } catch (err) { console.error(err); }
   });
 
-  // ЗДАТИСЯ В АУКЦІОНІ (ПАС)
   document.getElementById('auctionPassBtn').addEventListener('click', async () => {
     try {
       const r = await fetch(`${API}/room/${chatId}/auction_pass`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
-      if (!r.ok) {
-        const err = await r.json(); tg.showAlert(err.error || "Помилка"); return;
-      }
+      if (!r.ok) { const err = await r.json(); tg.showAlert(err.error || "Помилка"); return; }
       await syncRoom();
     } catch (e) { console.error(e); }
   });
@@ -451,9 +472,7 @@ const tg = window.Telegram.WebApp;
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
-      if(!r.ok) {
-          const err = await r.json(); tg.showAlert(err.error || "Помилка при покупці."); return;
-      }
+      if(!r.ok) { const err = await r.json(); tg.showAlert(err.error || "Помилка при покупці."); return; }
       await syncRoom();
     } catch (e) { console.error(e); }
   });
@@ -465,11 +484,8 @@ const tg = window.Telegram.WebApp;
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
-      if(!r.ok) {
-          const err = await r.json(); tg.showAlert(err.error || "Помилка при оплаті."); return;
-      }
-      const data = await r.json();
-      tg.showAlert(`Ви успішно заплатили $${data.amountToPay}`);
+      if(!r.ok) { const err = await r.json(); tg.showAlert(err.error || "Помилка при оплаті."); return; }
+      const data = await r.json(); tg.showAlert(`Ви успішно заплатили $${data.amountToPay}`);
       await syncRoom();
     } catch (e) { console.error(e); }
   });
