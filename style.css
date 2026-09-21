@@ -288,6 +288,20 @@ body {
   color: white; font-size: 18px; cursor: pointer; z-index: 10;
 }
 
+/* Значки рівня (Зірки / Корона) на протилежному боці від смужки */
+.cell-level {
+  position: absolute;
+  font-size: 10px;
+  line-height: 1;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  pointer-events: none;
+  z-index: 2;
+}
+.bar-top-lvl { bottom: 2px; left: 50%; transform: translateX(-50%); }
+.bar-bottom-lvl { top: 2px; left: 50%; transform: translateX(-50%); }
+.bar-right-lvl { left: 2px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+.bar-left-lvl { right: 2px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+
 /* Поле вводу для Аукціону */
 .auction-input {
   width: 100%;

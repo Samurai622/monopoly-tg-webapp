@@ -128,11 +128,13 @@ const tg = window.Telegram.WebApp;
   let currentTurnState = 'waiting_roll';
   let isRolling = false;
 
-  // ОНОВЛЕННЯ ЦІННИКІВ ТА ЗІРОЧОК
+  // МАЛЮЄМО РАМКИ, ЦІНИ ТА ЗІРОЧКИ
   function updateBoardPrices() {
+    // Очищаємо рамки та старі зірочки
     document.querySelectorAll('.cell').forEach(c => {
-      c.style.boxShadow = '';
-      c.style.border = '1px solid #334155'; 
+      c.style.boxShadow = ''; c.style.border = '1px solid #334155'; 
+      const oldStars = c.querySelector('.cell-level');
+      if (oldStars) oldStars.remove();
     });
 
     cellsData.forEach((data, i) => {
@@ -141,10 +143,10 @@ const tg = window.Telegram.WebApp;
       if (!priceTag) return;
       
       const property = currentProperties.find(p => p.cell_id === i);
+      const cell = document.querySelector(`[data-id='${i}']`);
       
       if (property) {
         const owner = players.find(p => p.db_id === property.owner_id);
-        const cell = document.querySelector(`[data-id='${i}']`);
         
         if (property.is_mortgaged) {
           priceTag.innerText = `🔒 Застава`;
@@ -155,7 +157,6 @@ const tg = window.Telegram.WebApp;
             cell.style.border = `2px dashed ${owner.color}`; 
           }
         } else {
-          // РАХУЄМО ПОТОЧНУ ОРЕНДУ І МАЛЮЄМО ЗІРОЧКИ
           let currentRent = data.rent;
           const lvl = property.level || 0;
           let lvlStars = "";
@@ -170,32 +171,44 @@ const tg = window.Telegram.WebApp;
               const ownedIds = currentProperties.filter(p => p.owner_id === property.owner_id).map(p => p.cell_id);
               const hasMonopoly = groupCells.every(id => ownedIds.includes(id));
               if (hasMonopoly) currentRent = data.rent * 2;
-            } else if (lvl === 1) { currentRent = data.rent * 3; lvlStars = "⭐ "; }
-            else if (lvl === 2) { currentRent = data.rent * 8; lvlStars = "⭐⭐ "; }
-            else if (lvl === 3) { currentRent = data.rent * 15; lvlStars = "⭐⭐⭐ "; }
-            else if (lvl === 4) { currentRent = data.rent * 25; lvlStars = "⭐⭐⭐⭐ "; }
-            else if (lvl === 5) { currentRent = data.rent * 40; lvlStars = "👑 "; }
+            } else if (lvl === 1) { currentRent = data.rent * 3; lvlStars = "⭐"; }
+            else if (lvl === 2) { currentRent = data.rent * 8; lvlStars = "⭐⭐"; }
+            else if (lvl === 3) { currentRent = data.rent * 15; lvlStars = "⭐⭐⭐"; }
+            else if (lvl === 4) { currentRent = data.rent * 25; lvlStars = "⭐⭐⭐⭐"; }
+            else if (lvl === 5) { currentRent = data.rent * 40; lvlStars = "👑"; }
           }
 
-          priceTag.innerText = `${lvlStars}$${currentRent}`;
+          // Тільки чиста ціна в ціннику
+          priceTag.innerText = `$${currentRent}`;
           priceTag.className = "cell-price price-rent";
           priceTag.style.color = ""; 
+          
           if (owner && cell) {
             cell.style.boxShadow = `inset 0 0 0 4px ${owner.color}`;
             cell.style.border = `1px solid #334155`; 
+          }
+
+          // Додаємо зірочки з іншого боку
+          if (lvlStars !== "" && cell) {
+            const starDiv = document.createElement("div");
+            starDiv.innerText = lvlStars;
+            if (i >= 0 && i <= 10) starDiv.className = "cell-level bar-top-lvl"; 
+            else if (i > 10 && i < 20) starDiv.className = "cell-level bar-right-lvl"; 
+            else if (i >= 20 && i <= 30) starDiv.className = "cell-level bar-bottom-lvl"; 
+            else starDiv.className = "cell-level bar-left-lvl"; 
+            cell.appendChild(starDiv);
           }
         }
       } else {
         priceTag.innerText = `$${data.price}`;
         priceTag.className = "cell-price price-buy";
         priceTag.style.color = "";
-        const cell = document.querySelector(`[data-id='${i}']`);
         if (cell) cell.style.border = `1px solid #334155`; 
       }
     });
   }
 
-  // ВІДКРИТТЯ ВІКНА + КНОПКА ПОКРАЩЕННЯ
+   // ВІКНО КЛІТИНКИ
   function openCellInfo(data) {
     document.getElementById("modalHeader").style.backgroundColor = data.groupColor || "#334155";
     document.getElementById("modalTitle").innerText = data.name;
@@ -222,7 +235,6 @@ const tg = window.Telegram.WebApp;
     const unmortgageBtn = document.getElementById("modalUnmortgageBtn");
     const sellBtn = document.getElementById("modalSellBtn");
     
-    // Додаємо кнопку UPGRADE, якщо її ще немає
     let upgradeBtn = document.getElementById("modalUpgradeBtn");
     if (!upgradeBtn) {
       upgradeBtn = document.createElement("button");
@@ -231,7 +243,18 @@ const tg = window.Telegram.WebApp;
       upgradeBtn.style.background = "#3b82f6"; 
       controlsDiv.insertBefore(upgradeBtn, mortgageBtn);
     }
+    
+    let downgradeBtn = document.getElementById("modalDowngradeBtn");
+    if (!downgradeBtn) {
+      downgradeBtn = document.createElement("button");
+      downgradeBtn.id = "modalDowngradeBtn";
+      downgradeBtn.className = "action-btn";
+      downgradeBtn.style.background = "#eab308"; 
+      controlsDiv.insertBefore(downgradeBtn, mortgageBtn);
+    }
+    
     upgradeBtn.style.display = "none";
+    downgradeBtn.style.display = "none";
     
     const property = currentProperties.find(p => p.cell_id === data.id);
     const me = players[myPlayerIndex];
@@ -241,6 +264,7 @@ const tg = window.Telegram.WebApp;
       
       const halfPrice = Math.floor(data.price / 2);
       const unmortgageCost = Math.floor(halfPrice * 1.1);
+      const lvl = property.level || 0;
 
       sellBtn.innerText = `💵 Продати банку ($${halfPrice})`;
       
@@ -248,21 +272,30 @@ const tg = window.Telegram.WebApp;
         mortgageBtn.style.display = "none";
         unmortgageBtn.style.display = "block";
         unmortgageBtn.innerText = `🔓 Викупити ($${unmortgageCost})`;
+        sellBtn.style.display = "block"; // Продавати заставлене можна
       } else {
         mortgageBtn.style.display = "block";
         unmortgageBtn.style.display = "none";
         mortgageBtn.innerText = `🔒 Заставити (+$${halfPrice})`;
 
-        // ПЕРЕВІРКА НА МОНОПОЛІЮ ДЛЯ ПРОКАЧКИ
+        if (lvl > 0) {
+          downgradeBtn.style.display = "block";
+          downgradeBtn.innerText = `⬇️ Продати рівень (+$${Math.floor(halfPrice / 2)})`;
+          downgradeBtn.onclick = () => sendPropertyAction('downgrade', data.id);
+          
+          sellBtn.style.display = "none"; // Продавати фірму з будинками не можна!
+        } else {
+          sellBtn.style.display = "block";
+        }
+
         if (!data.isAuto) {
           const groupCells = cellsData.filter(c => c.groupColor === data.groupColor).map(c => c.id);
           const ownedIds = currentProperties.filter(p => p.owner_id === me.db_id).map(p => p.cell_id);
           const hasMonopoly = groupCells.every(id => ownedIds.includes(id));
-          const lvl = property.level || 0;
 
           if (hasMonopoly && lvl < 5) {
             upgradeBtn.style.display = "block";
-            upgradeBtn.innerText = `⬆️ Покращити ($${halfPrice})`;
+            upgradeBtn.innerText = `⬆️ Покращити (-$${halfPrice})`;
             upgradeBtn.onclick = () => sendPropertyAction('upgrade', data.id);
           }
         }
