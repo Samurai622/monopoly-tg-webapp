@@ -213,7 +213,7 @@ const tg = window.Telegram.WebApp;
     });
   }
 
-   // ВІКНО КЛІТИНКИ
+  // ВІКНО КЛІТИНКИ ТА ЛОГІКА ПРОКАЧКИ
   function openCellInfo(data) {
     document.getElementById("modalHeader").style.backgroundColor = data.groupColor || "#334155";
     document.getElementById("modalTitle").innerText = data.name;
@@ -260,6 +260,9 @@ const tg = window.Telegram.WebApp;
     
     upgradeBtn.style.display = "none";
     downgradeBtn.style.display = "none";
+    mortgageBtn.style.display = "none";
+    unmortgageBtn.style.display = "none";
+    sellBtn.style.display = "none";
     
     const property = currentProperties.find(p => p.cell_id === data.id);
     const me = players[myPlayerIndex];
@@ -271,38 +274,54 @@ const tg = window.Telegram.WebApp;
       const unmortgageCost = Math.floor(halfPrice * 1.1);
       const lvl = property.level || 0;
 
+      // ЛОГІКА РІВНОМІРНОЇ ЗАБУДОВИ ТА ПРОДАЖУ
+      let minLevel = 0;
+      let maxLevel = 0;
+      let hasMonopoly = false;
+      let hasAnyHousesInGroup = false;
+
+      if (!data.isAuto) {
+        const groupCells = cellsData.filter(c => c.groupColor === data.groupColor).map(c => c.id);
+        const groupProps = currentProperties.filter(p => p.owner_id === me.db_id && groupCells.includes(p.cell_id));
+        hasMonopoly = groupCells.every(id => groupProps.map(p => p.cell_id).includes(id));
+        
+        if (groupProps.length > 0) {
+          const levels = groupProps.map(p => p.level || 0);
+          minLevel = Math.min(...levels);
+          maxLevel = Math.max(...levels);
+          hasAnyHousesInGroup = levels.some(l => l > 0);
+        }
+      }
+
       sellBtn.innerText = `💵 Продати банку ($${halfPrice})`;
       
       if (property.is_mortgaged) {
-        mortgageBtn.style.display = "none";
         unmortgageBtn.style.display = "block";
         unmortgageBtn.innerText = `🔓 Викупити ($${unmortgageCost})`;
-        sellBtn.style.display = "block"; // Продавати заставлене можна
+        sellBtn.style.display = "block"; 
       } else {
-        mortgageBtn.style.display = "block";
-        unmortgageBtn.style.display = "none";
-        mortgageBtn.innerText = `🔒 Заставити (+$${halfPrice})`;
-
+        // Якщо є рівні, показуємо продаж рівнів
         if (lvl > 0) {
-          downgradeBtn.style.display = "block";
-          downgradeBtn.innerText = `⬇️ Продати рівень (+$${Math.floor(halfPrice / 2)})`;
-          downgradeBtn.onclick = () => sendPropertyAction('downgrade', data.id);
-          
-          sellBtn.style.display = "none"; // Продавати фірму з будинками не можна!
-        } else {
+          // ПРОДАВАТИ РІВНІ МОЖНА ТІЛЬКИ ЯКЩО МИ НЕ ПОРУШУЄМО ПРАВИЛО
+          if (lvl >= maxLevel) {
+            downgradeBtn.style.display = "block";
+            downgradeBtn.innerText = `⬇️ Продати рівень (+$${Math.floor(halfPrice / 2)})`;
+            downgradeBtn.onclick = () => sendPropertyAction('downgrade', data.id);
+          }
+        } 
+        
+        // Застава і Продаж фірми доступні ТІЛЬКИ якщо в усій групі НЕМАЄ жодного рівня!
+        if (!hasAnyHousesInGroup) {
+          mortgageBtn.style.display = "block";
           sellBtn.style.display = "block";
+          mortgageBtn.innerText = `🔒 Заставити (+$${halfPrice})`;
         }
 
-        if (!data.isAuto) {
-          const groupCells = cellsData.filter(c => c.groupColor === data.groupColor).map(c => c.id);
-          const ownedIds = currentProperties.filter(p => p.owner_id === me.db_id).map(p => p.cell_id);
-          const hasMonopoly = groupCells.every(id => ownedIds.includes(id));
-
-          if (hasMonopoly && lvl < 5) {
-            upgradeBtn.style.display = "block";
-            upgradeBtn.innerText = `⬆️ Покращити (-$${halfPrice})`;
-            upgradeBtn.onclick = () => sendPropertyAction('upgrade', data.id);
-          }
+        // КНОПКА ПОКРАЩЕННЯ (Рівномірно)
+        if (hasMonopoly && lvl < 5 && lvl <= minLevel) {
+          upgradeBtn.style.display = "block";
+          upgradeBtn.innerText = `⬆️ Покращити (-$${halfPrice})`;
+          upgradeBtn.onclick = () => sendPropertyAction('upgrade', data.id);
         }
       }
 
