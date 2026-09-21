@@ -71,6 +71,7 @@ const tg = window.Telegram.WebApp;
 
   // ГЕНЕРАЦІЯ ПОЛЯ
   cellsData.forEach((data, i) => {
+    data.id = i;
     const cell = document.createElement("div");
     cell.className = `cell`;
     cell.dataset.id = i;
