@@ -66,7 +66,6 @@ const tg = window.Telegram.WebApp;
   const cells = [];
   let currentProperties = []; 
 
-  // ДАНІ АУКЦІОНУ
   let actionCellId = null;
   let auctionData = { price: 0, winnerId: null, passed: [] };
 
@@ -128,9 +127,12 @@ const tg = window.Telegram.WebApp;
   let currentTurnState = 'waiting_roll';
   let isRolling = false;
 
-  // МАЛЮЄМО РАМКИ ВЛАСНИКІВ
+  // ОНОВЛЕННЯ ЦІННИКІВ ТА РАМОК ВЛАСНОСТІ (І ЗАСТАВИ)
   function updateBoardPrices() {
-    document.querySelectorAll('.cell').forEach(c => c.style.boxShadow = '');
+    document.querySelectorAll('.cell').forEach(c => {
+      c.style.boxShadow = '';
+      c.style.border = '1px solid #334155'; 
+    });
 
     cellsData.forEach((data, i) => {
       if (!data.price) return;
@@ -140,33 +142,27 @@ const tg = window.Telegram.WebApp;
       const property = currentProperties.find(p => p.cell_id === i);
       
       if (property) {
-        // Знаходимо власника
         const owner = players.find(p => p.db_id === property.owner_id);
+        const cell = document.querySelector(`[data-id='${i}']`);
         
         if (property.is_mortgaged) {
-          // ФІРМА В ЗАСТАВІ
-          priceTag.innerText = `🔒 В заставі`;
+          priceTag.innerText = `🔒 Застава`;
           priceTag.className = "cell-price";
-          priceTag.style.color = "#94a3b8"; // Сірий текст
-          if (owner) {
-            const cell = document.querySelector(`[data-id='${i}']`);
-            // Пунктирна рамка для застави
-            if (cell) cell.style.boxShadow = `inset 0 0 0 4px ${owner.color}`;
-            if (cell) cell.style.border = `2px dashed ${owner.color}`; 
+          priceTag.style.color = "#94a3b8"; 
+          if (owner && cell) {
+            cell.style.boxShadow = `inset 0 0 0 4px ${owner.color}`;
+            cell.style.border = `2px dashed ${owner.color}`; 
           }
         } else {
-          // ФІРМА АКТИВНА
           priceTag.innerText = `$${data.rent}`;
           priceTag.className = "cell-price price-rent";
-          priceTag.style.color = ""; // Скидаємо стилі
-          if (owner) {
-            const cell = document.querySelector(`[data-id='${i}']`);
-            if (cell) cell.style.boxShadow = `inset 0 0 0 4px ${owner.color}`;
-            if (cell) cell.style.border = `1px solid #334155`; 
+          priceTag.style.color = ""; 
+          if (owner && cell) {
+            cell.style.boxShadow = `inset 0 0 0 4px ${owner.color}`;
+            cell.style.border = `1px solid #334155`; 
           }
         }
       } else {
-        // ФІРМА ВІЛЬНА
         priceTag.innerText = `$${data.price}`;
         priceTag.className = "cell-price price-buy";
         priceTag.style.color = "";
@@ -176,7 +172,7 @@ const tg = window.Telegram.WebApp;
     });
   }
 
-  // ВІДКРИТТЯ ВІКНА + КНОПКИ ЗАСТАВИ/ПРОДАЖУ
+  // ВІДКРИТТЯ ВІКНА ТА ЛОГІКА ПРОДАЖУ/ЗАСТАВИ
   function openCellInfo(data) {
     document.getElementById("modalHeader").style.backgroundColor = data.groupColor || "#334155";
     document.getElementById("modalTitle").innerText = data.name;
@@ -225,7 +221,6 @@ const tg = window.Telegram.WebApp;
         mortgageBtn.innerText = `🔒 Заставити (+$${halfPrice})`;
       }
 
-      // Обробники кнопок
       mortgageBtn.onclick = () => sendPropertyAction('mortgage', data.id);
       unmortgageBtn.onclick = () => sendPropertyAction('unmortgage', data.id);
       sellBtn.onclick = () => {
@@ -240,6 +235,15 @@ const tg = window.Telegram.WebApp;
     document.getElementById("cellModal").style.display = "flex";
   }
 
+  // ЗАКРИТТЯ ВІКНА
+  const closeBtn = document.getElementById("closeModalBtn");
+  if(closeBtn) {
+    closeBtn.addEventListener("click", () => {
+      document.getElementById("cellModal").style.display = "none";
+    });
+  }
+
+  // ЗАПИТИ ВЛАСНОСТІ НА СЕРВЕР
   async function sendPropertyAction(endpoint, cellId) {
     try {
       const r = await fetch(`${API}/room/${chatId}/${endpoint}`, {
@@ -277,7 +281,6 @@ const tg = window.Telegram.WebApp;
     updateAuctionUI(); 
   }
 
-  // ОНОВЛЕНІ ФІШКИ (Більше не зникають)
   function addToken(cellId, color, indexInCell) {
     const cell = document.querySelector(`[data-id='${cellId}']`);
     if (!cell) return;
@@ -565,7 +568,7 @@ const tg = window.Telegram.WebApp;
   document.getElementById('endTurnBtn').addEventListener('click', async () => {
     if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
     try {
-      await fetch(`${API}/room/${chatId}/end_turn`, {
+      const r = await fetch(`${API}/room/${chatId}/end_turn`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
