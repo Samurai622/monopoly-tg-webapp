@@ -40,7 +40,7 @@ const tg = window.Telegram.WebApp;
     {name:"KFS", img:"images/kfs.png", groupColor: "#f97316", price: 220, rent: 22},
     {name:"Task", img:"images/task(left).png"},
     {name:"Pizza Hut", img:"images/pizza hut.png", groupColor: "#f97316", price: 200, rent: 20},
-    {name:"Free Parking", img:"images/freeparking.png"}, 
+    {name:"Free Parking", img:"images/jail.png"}, 
     {name:"Telegram", img:"images/telegram.png", groupColor: "#ef4444", price: 420, rent: 42}, 
     {name:"WhatsApp", img:"images/whatsapp.png", groupColor: "#ef4444", price: 380, rent: 38},
     {name:"Instagram", img:"images/instagram.png", groupColor: "#ef4444", price: 400, rent: 40},
@@ -140,21 +140,43 @@ const tg = window.Telegram.WebApp;
       const property = currentProperties.find(p => p.cell_id === i);
       
       if (property) {
-        priceTag.innerText = `$${data.rent}`;
-        priceTag.className = "cell-price price-rent";
-        
+        // Знаходимо власника
         const owner = players.find(p => p.db_id === property.owner_id);
-        if (owner) {
-          const cell = document.querySelector(`[data-id='${i}']`);
-          if (cell) cell.style.boxShadow = `inset 0 0 0 4px ${owner.color}`;
+        
+        if (property.is_mortgaged) {
+          // ФІРМА В ЗАСТАВІ
+          priceTag.innerText = `🔒 В заставі`;
+          priceTag.className = "cell-price";
+          priceTag.style.color = "#94a3b8"; // Сірий текст
+          if (owner) {
+            const cell = document.querySelector(`[data-id='${i}']`);
+            // Пунктирна рамка для застави
+            if (cell) cell.style.boxShadow = `inset 0 0 0 4px ${owner.color}`;
+            if (cell) cell.style.border = `2px dashed ${owner.color}`; 
+          }
+        } else {
+          // ФІРМА АКТИВНА
+          priceTag.innerText = `$${data.rent}`;
+          priceTag.className = "cell-price price-rent";
+          priceTag.style.color = ""; // Скидаємо стилі
+          if (owner) {
+            const cell = document.querySelector(`[data-id='${i}']`);
+            if (cell) cell.style.boxShadow = `inset 0 0 0 4px ${owner.color}`;
+            if (cell) cell.style.border = `1px solid #334155`; 
+          }
         }
       } else {
+        // ФІРМА ВІЛЬНА
         priceTag.innerText = `$${data.price}`;
         priceTag.className = "cell-price price-buy";
+        priceTag.style.color = "";
+        const cell = document.querySelector(`[data-id='${i}']`);
+        if (cell) cell.style.border = `1px solid #334155`; 
       }
     });
   }
 
+  // ВІДКРИТТЯ ВІКНА + КНОПКИ ЗАСТАВИ/ПРОДАЖУ
   function openCellInfo(data) {
     document.getElementById("modalHeader").style.backgroundColor = data.groupColor || "#334155";
     document.getElementById("modalTitle").innerText = data.name;
@@ -175,12 +197,62 @@ const tg = window.Telegram.WebApp;
       document.getElementById("modalRent4").innerText = `$${data.rent * 25}`;
       document.getElementById("modalRentMax").innerText = `$${data.rent * 40}`;
     }
+
+    // === ЛОГІКА УПРАВЛІННЯ ВЛАСНІСТЮ ===
+    const controlsDiv = document.getElementById("modalPropertyControls");
+    const mortgageBtn = document.getElementById("modalMortgageBtn");
+    const unmortgageBtn = document.getElementById("modalUnmortgageBtn");
+    const sellBtn = document.getElementById("modalSellBtn");
+    
+    const property = currentProperties.find(p => p.cell_id === data.id);
+    const me = players[myPlayerIndex];
+
+    if (property && me && String(property.owner_id) === String(me.db_id)) {
+      controlsDiv.style.display = "flex";
+      
+      const halfPrice = Math.floor(data.price / 2);
+      const unmortgageCost = Math.floor(halfPrice * 1.1);
+
+      sellBtn.innerText = `💵 Продати банку ($${halfPrice})`;
+      
+      if (property.is_mortgaged) {
+        mortgageBtn.style.display = "none";
+        unmortgageBtn.style.display = "block";
+        unmortgageBtn.innerText = `🔓 Викупити ($${unmortgageCost})`;
+      } else {
+        mortgageBtn.style.display = "block";
+        unmortgageBtn.style.display = "none";
+        mortgageBtn.innerText = `🔒 Заставити (+$${halfPrice})`;
+      }
+
+      // Обробники кнопок
+      mortgageBtn.onclick = () => sendPropertyAction('mortgage', data.id);
+      unmortgageBtn.onclick = () => sendPropertyAction('unmortgage', data.id);
+      sellBtn.onclick = () => {
+        tg.showConfirm(`Продати назавжди за $${halfPrice}?`, (confirmed) => {
+          if (confirmed) sendPropertyAction('sell_property', data.id);
+        });
+      };
+    } else {
+      controlsDiv.style.display = "none";
+    }
+
     document.getElementById("cellModal").style.display = "flex";
   }
 
-  document.getElementById("closeModalBtn").addEventListener("click", () => {
-    document.getElementById("cellModal").style.display = "none";
-  });
+  async function sendPropertyAction(endpoint, cellId) {
+    try {
+      const r = await fetch(`${API}/room/${chatId}/${endpoint}`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId: myTgId, cellId })
+      });
+      if (!r.ok) {
+        const err = await r.json(); tg.showAlert(err.error || "Помилка"); return;
+      }
+      document.getElementById("cellModal").style.display = "none";
+      await syncRoom();
+    } catch (e) { console.error(e); }
+  }
 
   function renderPlayers() {
     playersBox.querySelectorAll(".player").forEach(p => p.remove());
