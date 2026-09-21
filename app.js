@@ -157,9 +157,10 @@ const tg = window.Telegram.WebApp;
             cell.style.border = `2px dashed ${owner.color}`; 
           }
         } else {
+          // РАХУЄМО ПОТОЧНУ ОРЕНДУ І МАЛЮЄМО ЗІРОЧКИ
           let currentRent = data.rent;
           const lvl = property.level || 0;
-          let lvlStars = "";
+          let lvlHTML = ""; // Тепер це HTML код, а не просто текст
 
           if (data.isAuto) {
             const autosOwned = currentProperties.filter(p => p.owner_id === property.owner_id && cellsData[p.cell_id].isAuto).length;
@@ -171,14 +172,16 @@ const tg = window.Telegram.WebApp;
               const ownedIds = currentProperties.filter(p => p.owner_id === property.owner_id).map(p => p.cell_id);
               const hasMonopoly = groupCells.every(id => ownedIds.includes(id));
               if (hasMonopoly) currentRent = data.rent * 2;
-            } else if (lvl === 1) { currentRent = data.rent * 3; lvlStars = "⭐"; }
-            else if (lvl === 2) { currentRent = data.rent * 8; lvlStars = "⭐⭐"; }
-            else if (lvl === 3) { currentRent = data.rent * 15; lvlStars = "⭐⭐⭐"; }
-            else if (lvl === 4) { currentRent = data.rent * 25; lvlStars = "⭐⭐⭐⭐"; }
-            else if (lvl === 5) { currentRent = data.rent * 40; lvlStars = "👑"; }
+            } 
+            // Будуємо зірочки окремими блоками для гарної сітки
+            else if (lvl === 1) { currentRent = data.rent * 3;  lvlHTML = "<span>⭐</span>"; }
+            else if (lvl === 2) { currentRent = data.rent * 8;  lvlHTML = "<span>⭐</span><span>⭐</span>"; }
+            else if (lvl === 3) { currentRent = data.rent * 15; lvlHTML = "<span>⭐</span><span>⭐</span><span>⭐</span>"; }
+            else if (lvl === 4) { currentRent = data.rent * 25; lvlHTML = "<span>⭐</span><span>⭐</span><span>⭐</span><span>⭐</span>"; }
+            else if (lvl === 5) { currentRent = data.rent * 40; lvlHTML = "<span style='font-size:14px'>👑</span>"; }
           }
 
-          // Тільки чиста ціна в ціннику
+          // ЦІНА ЧИСТА, БЕЗ ЗІРОЧОК
           priceTag.innerText = `$${currentRent}`;
           priceTag.className = "cell-price price-rent";
           priceTag.style.color = ""; 
@@ -188,14 +191,16 @@ const tg = window.Telegram.WebApp;
             cell.style.border = `1px solid #334155`; 
           }
 
-          // Додаємо зірочки з іншого боку
-          if (lvlStars !== "" && cell) {
+          // ДОДАЄМО ЗІРОЧКИ (вставляємо як HTML)
+          if (lvlHTML !== "" && cell) {
             const starDiv = document.createElement("div");
-            starDiv.innerText = lvlStars;
+            starDiv.innerHTML = lvlHTML; // Використовуємо innerHTML
+            
             if (i >= 0 && i <= 10) starDiv.className = "cell-level bar-top-lvl"; 
             else if (i > 10 && i < 20) starDiv.className = "cell-level bar-right-lvl"; 
             else if (i >= 20 && i <= 30) starDiv.className = "cell-level bar-bottom-lvl"; 
             else starDiv.className = "cell-level bar-left-lvl"; 
+            
             cell.appendChild(starDiv);
           }
         }
