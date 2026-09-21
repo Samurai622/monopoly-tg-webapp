@@ -17,6 +17,7 @@ const tg = window.Telegram.WebApp;
   const API = 'https://server-monopoly-tg-8um6.onrender.com';
   let isAnimatingMove = false;
   let pendingRoom = null;
+  let hasUpgradedThisTurn = false;
 
   /* Масив клітинок */
   const cellsData = [
@@ -318,10 +319,25 @@ const tg = window.Telegram.WebApp;
         }
 
         // КНОПКА ПОКРАЩЕННЯ (Рівномірно)
+       const isMyTurn = currentTurnId && String(currentTurnId) === String(myTgId);
+        
         if (hasMonopoly && lvl < 5 && lvl <= minLevel) {
-          upgradeBtn.style.display = "block";
-          upgradeBtn.innerText = `⬆️ Покращити (-$${halfPrice})`;
-          upgradeBtn.onclick = () => sendPropertyAction('upgrade', data.id);
+          if (!isMyTurn) {
+            upgradeBtn.style.display = "block";
+            upgradeBtn.innerText = "❌ Будувати можна тільки у свій хід";
+            upgradeBtn.style.background = "#475569"; // Сірий
+            upgradeBtn.onclick = null; // Вимикаємо клік
+          } else if (hasUpgradedThisTurn) {
+            upgradeBtn.style.display = "block";
+            upgradeBtn.innerText = "⏳ Дочекайтесь наступного ходу";
+            upgradeBtn.style.background = "#475569";
+            upgradeBtn.onclick = null;
+          } else {
+            upgradeBtn.style.display = "block";
+            upgradeBtn.innerText = `⬆️ Покращити (-$${halfPrice})`;
+            upgradeBtn.style.background = "#3b82f6"; // Нормальний синій
+            upgradeBtn.onclick = () => sendPropertyAction('upgrade', data.id);
+          }
         }
       }
 
@@ -463,6 +479,7 @@ const tg = window.Telegram.WebApp;
       currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
       myPlayerIndex = players.findIndex(p => p.id === Number(myTgId));
       currentTurnState = room.turnState || 'waiting_roll';
+      hasUpgradedThisTurn = room.hasUpgradedThisTurn || false;
       currentProperties = room.properties || [];
       actionCellId = room.actionCellId !== null ? Number(room.actionCellId) : null;
       auctionData.price = Number(room.auctionPrice || 0);
@@ -480,6 +497,7 @@ const tg = window.Telegram.WebApp;
     currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
     myPlayerIndex = players.findIndex(p => p.id === Number(myTgId));
     currentTurnState = room.turnState || 'waiting_roll';
+    hasUpgradedThisTurn = room.hasUpgradedThisTurn || false;
     currentProperties = room.properties || [];
     actionCellId = room.actionCellId !== null ? Number(room.actionCellId) : null;
     auctionData.price = Number(room.auctionPrice || 0);
