@@ -424,6 +424,9 @@ const tg = window.Telegram.WebApp;
   function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
+  let pendingTaskText = null;
+  let pendingBonus = 0;
+
   rollBtn.addEventListener("click", async () => {
     if (isRolling || !currentTurnId || currentTurnState !== 'waiting_roll' || String(currentTurnId) !== String(myTgId)) return;
     isRolling = true;
@@ -443,14 +446,11 @@ const tg = window.Telegram.WebApp;
       
       const data = await r.json();
       
-      // === ПЕРЕВІРКА НА ШАНС ===
+      // ЗБЕРІГАЄМО результат, щоб показати ЙОГО ПІСЛЯ АНІМАЦІЇ
       if (data.taskText) {
-        // Якщо випав Шанс - показуємо фіолетове вікно
-        document.getElementById("taskText").innerText = data.taskText;
-        document.getElementById("taskModal").style.display = "flex";
+        pendingTaskText = data.taskText;
       } else if (data.bonus > 0) {
-        // Якщо просто пройшли Старт або стали на бонус
-        tg.showAlert(`🎉 Ви отримали бонус: $${data.bonus}!`);
+        pendingBonus = data.bonus;
       }
       
       await syncRoom();
@@ -510,7 +510,11 @@ const tg = window.Telegram.WebApp;
     }
 
     isAnimatingMove = true;
+    
+    // 1. АНІМАЦІЯ РУХУ
     await animateTo(room.players);
+    
+    // 2. ОНОВЛЕННЯ ДАНИХ (Коли фішки вже доїхали)
     currentTurn = Number(room.currentTurn);
     currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
     myPlayerIndex = players.findIndex(p => p.id === Number(myTgId));
@@ -531,6 +535,16 @@ const tg = window.Telegram.WebApp;
 
     updateBoardPrices();
     renderPlayers();
+
+    // 3. ПОКАЗУЄМО ВІКНА (Тільки після повної зупинки фішок!)
+    if (pendingTaskText) {
+      document.getElementById("taskText").innerText = pendingTaskText;
+      document.getElementById("taskModal").style.display = "flex";
+      pendingTaskText = null; // Очищаємо, щоб не показало двічі
+    } else if (pendingBonus > 0) {
+      tg.showAlert(`🎉 Ви отримали бонус: $${pendingBonus}!`);
+      pendingBonus = 0; // Очищаємо
+    }
 
     if (pendingRoom) {
       const r = pendingRoom; pendingRoom = null; await applyRoom(r);
