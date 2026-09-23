@@ -362,6 +362,13 @@ const tg = window.Telegram.WebApp;
     });
   }
 
+  const taskOkBtn = document.getElementById("taskOkBtn");
+  if(taskOkBtn) {
+    taskOkBtn.addEventListener("click", () => {
+      document.getElementById("taskModal").style.display = "none";
+    });
+  }
+
   async function sendPropertyAction(endpoint, cellId) {
     try {
       const r = await fetch(`${API}/room/${chatId}/${endpoint}`, {
@@ -433,8 +440,19 @@ const tg = window.Telegram.WebApp;
         const err = await r.json().catch(() => ({}));
         tg.showAlert(err.error || "Помилка ходу"); return;
       }
+      
       const data = await r.json();
-      if (data.bonus > 0) tg.showAlert(`🎉 Ви отримали бонус: $${data.bonus}!`);
+      
+      // === ПЕРЕВІРКА НА ШАНС ===
+      if (data.taskText) {
+        // Якщо випав Шанс - показуємо фіолетове вікно
+        document.getElementById("taskText").innerText = data.taskText;
+        document.getElementById("taskModal").style.display = "flex";
+      } else if (data.bonus > 0) {
+        // Якщо просто пройшли Старт або стали на бонус
+        tg.showAlert(`🎉 Ви отримали бонус: $${data.bonus}!`);
+      }
+      
       await syncRoom();
     } finally { isRolling = false; }
   });
