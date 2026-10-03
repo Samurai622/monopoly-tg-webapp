@@ -632,8 +632,6 @@ const tg = window.Telegram.WebApp;
       } else if (currentTurnState === 'must_pay') {
         decisionPanel.style.display = "flex"; payBtn.style.display = "block";
       } else if (currentTurnState === 'casino_action') {
-        endTurnBtn.style.display = "block"; diceResult.innerText = "🎰 Ставки поки що не працюють. Завершуй хід.";
-      } else if (currentTurnState === 'casino_action') {
         document.getElementById("casinoModal").style.display = "flex";
       }
     }
