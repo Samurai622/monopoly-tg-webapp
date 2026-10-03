@@ -499,7 +499,6 @@ const tg = window.Telegram.WebApp;
       auctionData.price = Number(room.auctionPrice || 0);
       auctionData.winnerId = room.auctionWinnerId ? Number(room.auctionWinnerId) : null;
       auctionData.passed = room.auctionPassed || [];
-      p.jail_turns = sp.jail_turns || 0;
 
       updateBoardPrices();
       renderPlayers();
@@ -525,14 +524,17 @@ const tg = window.Telegram.WebApp;
     for (const sp of room.players) {
       const p = players.find(pl => pl.id === Number(sp.id));
       if (!p) continue;
-      p.pos = Number(sp.pos); p.money = sp.money; p.active = sp.active; p.color = sp.color; p.jail_turns = sp.jail_turns || 0;
+      p.pos = Number(sp.pos); 
+      p.money = sp.money; 
+      p.active = sp.active; 
+      p.color = sp.color;
+      p.jail_turns = Number(sp.jail_turns) || 0; 
     }
     isAnimatingMove = false;
 
     updateBoardPrices();
     renderPlayers();
 
-    // ПОКАЗ ВІКОН ПІСЛЯ АНІМАЦІЇ (Шанс / Бонус)
     if (pendingTaskText) {
       const taskTextEl = document.getElementById("taskText");
       const taskModal = document.getElementById("taskModal");
@@ -540,7 +542,7 @@ const tg = window.Telegram.WebApp;
         taskTextEl.innerText = pendingTaskText;
         taskModal.style.display = "flex";
       } else {
-        tg.showAlert(pendingTaskText); // Fallback якщо немає HTML вікна
+        tg.showAlert(pendingTaskText); 
       }
       pendingTaskText = null; 
     } else if (pendingBonus > 0) {
