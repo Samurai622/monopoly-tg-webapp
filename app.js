@@ -633,6 +633,8 @@ const tg = window.Telegram.WebApp;
         decisionPanel.style.display = "flex"; payBtn.style.display = "block";
       } else if (currentTurnState === 'casino_action') {
         endTurnBtn.style.display = "block"; diceResult.innerText = "🎰 Ставки поки що не працюють. Завершуй хід.";
+      } else if (currentTurnState === 'casino_action') {
+        document.getElementById("casinoModal").style.display = "flex";
       }
     }
   }
@@ -803,6 +805,70 @@ const tg = window.Telegram.WebApp;
   });
 
   document.getElementById('tradeBtn').addEventListener('click', () => alert("В розробці"));
+
+  // === ЛОГІКА КАЗИНО ===
+  let selectedBetType = null;
+  const casinoBetBtns = document.querySelectorAll('.casino-bet-btn');
+
+  // Вибір на що ставити
+  casinoBetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Скидаємо кольори всіх кнопок
+      casinoBetBtns.forEach(b => {
+        b.style.background = "#475569";
+        b.style.border = "none";
+      });
+      // Виділяємо натиснуту
+      btn.style.background = "#3b82f6";
+      btn.style.border = "1px solid white";
+      selectedBetType = btn.getAttribute('data-bet');
+    });
+  });
+
+  // Грати
+  document.getElementById('casinoPlayBtn').addEventListener('click', async () => {
+    const betAmount = Number(document.getElementById('casinoBetInput').value);
+    
+    if (!betAmount || betAmount <= 0) {
+      tg.showAlert("Введіть суму ставки!"); return;
+    }
+    if (!selectedBetType) {
+      tg.showAlert("Оберіть, на що ставити (Парне, Непарне або Число)!"); return;
+    }
+
+    try {
+      const r = await fetch(`${API}/room/${chatId}/play_casino`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId: myTgId, betAmount, betType: selectedBetType })
+      });
+      if (!r.ok) {
+        const err = await r.json(); tg.showAlert(err.error || "Помилка казино"); return;
+      }
+      
+      const data = await r.json();
+      tg.showAlert(data.resultMsg); // Показує, що випало і чи виграв
+      
+      document.getElementById('casinoModal').style.display = "none";
+      document.getElementById('casinoBetInput').value = '';
+      selectedBetType = null;
+      casinoBetBtns.forEach(b => { b.style.background = "#475569"; b.style.border = "none"; });
+      
+      await syncRoom();
+    } catch (e) { console.error(e); }
+  });
+
+  // Відмовитись
+  document.getElementById('casinoSkipBtn').addEventListener('click', async () => {
+    try {
+      const r = await fetch(`${API}/room/${chatId}/skip_casino`, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId: myTgId })
+      });
+      if (!r.ok) return;
+      document.getElementById('casinoModal').style.display = "none";
+      await syncRoom();
+    } catch (e) { console.error(e); }
+  });
 
   connectToServer();
   setInterval(syncRoom, 2000);
