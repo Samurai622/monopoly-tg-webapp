@@ -618,7 +618,7 @@ const tg = window.Telegram.WebApp;
             // Є ВИБІР: Заплатити і піти одразу АБО Ризикнути на дабл (і завершити хід)
             rollBtn.style.display = "block";
             if(payBailBtn) payBailBtn.style.display = "block";
-            diceResult.innerText = `👮 В'язниця (Спроба ${me.jail_turns}/3).\nДабл (вихід без ходу) АБО Заплатити $50 (вийти і піти).`;
+            diceResult.innerText = `👮 В'язниця (Спроба ${me.jail_turns}/3).`;
           }
         } else {
           rollBtn.style.display = "block";
