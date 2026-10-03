@@ -131,7 +131,6 @@ const tg = window.Telegram.WebApp;
 
   // МАЛЮЄМО РАМКИ, ЦІНИ ТА ЗІРОЧКИ
   function updateBoardPrices() {
-    // Очищаємо рамки та старі зірочки
     document.querySelectorAll('.cell').forEach(c => {
       c.style.boxShadow = ''; c.style.border = '1px solid #334155'; 
       const oldStars = c.querySelector('.cell-level');
@@ -158,10 +157,9 @@ const tg = window.Telegram.WebApp;
             cell.style.border = `2px dashed ${owner.color}`; 
           }
         } else {
-          // РАХУЄМО ПОТОЧНУ ОРЕНДУ І МАЛЮЄМО ЗІРОЧКИ
           let currentRent = data.rent;
           const lvl = property.level || 0;
-          let lvlHTML = ""; // Тепер це HTML код, а не просто текст
+          let lvlHTML = ""; 
 
           if (data.isAuto) {
             const autosOwned = currentProperties.filter(p => p.owner_id === property.owner_id && cellsData[p.cell_id].isAuto).length;
@@ -174,7 +172,6 @@ const tg = window.Telegram.WebApp;
               const hasMonopoly = groupCells.every(id => ownedIds.includes(id));
               if (hasMonopoly) currentRent = data.rent * 2;
             } 
-            // Будуємо зірочки окремими блоками для гарної сітки
             else if (lvl === 1) { currentRent = data.rent * 3;  lvlHTML = "<span>⭐</span>"; }
             else if (lvl === 2) { currentRent = data.rent * 8;  lvlHTML = "<span>⭐</span><span>⭐</span>"; }
             else if (lvl === 3) { currentRent = data.rent * 15; lvlHTML = "<span>⭐</span><span>⭐</span><span>⭐</span>"; }
@@ -182,7 +179,6 @@ const tg = window.Telegram.WebApp;
             else if (lvl === 5) { currentRent = data.rent * 40; lvlHTML = "<span style='font-size:14px'>👑</span>"; }
           }
 
-          // ЦІНА ЧИСТА, БЕЗ ЗІРОЧОК
           priceTag.innerText = `$${currentRent}`;
           priceTag.className = "cell-price price-rent";
           priceTag.style.color = ""; 
@@ -192,10 +188,9 @@ const tg = window.Telegram.WebApp;
             cell.style.border = `1px solid #334155`; 
           }
 
-          // ДОДАЄМО ЗІРОЧКИ (вставляємо як HTML)
           if (lvlHTML !== "" && cell) {
             const starDiv = document.createElement("div");
-            starDiv.innerHTML = lvlHTML; // Використовуємо innerHTML
+            starDiv.innerHTML = lvlHTML; 
             
             if (i >= 0 && i <= 10) starDiv.className = "cell-level bar-top-lvl"; 
             else if (i > 10 && i < 20) starDiv.className = "cell-level bar-right-lvl"; 
@@ -275,7 +270,6 @@ const tg = window.Telegram.WebApp;
       const unmortgageCost = Math.floor(halfPrice * 1.1);
       const lvl = property.level || 0;
 
-      // ЛОГІКА РІВНОМІРНОЇ ЗАБУДОВИ ТА ПРОДАЖУ
       let minLevel = 0;
       let maxLevel = 0;
       let hasMonopoly = false;
@@ -301,9 +295,7 @@ const tg = window.Telegram.WebApp;
         unmortgageBtn.innerText = `🔓 Викупити ($${unmortgageCost})`;
         sellBtn.style.display = "block"; 
       } else {
-        // Якщо є рівні, показуємо продаж рівнів
         if (lvl > 0) {
-          // ПРОДАВАТИ РІВНІ МОЖНА ТІЛЬКИ ЯКЩО МИ НЕ ПОРУШУЄМО ПРАВИЛО
           if (lvl >= maxLevel) {
             downgradeBtn.style.display = "block";
             downgradeBtn.innerText = `⬇️ Продати рівень (+$${Math.floor(halfPrice / 2)})`;
@@ -311,31 +303,29 @@ const tg = window.Telegram.WebApp;
           }
         } 
         
-        // Застава і Продаж фірми доступні ТІЛЬКИ якщо в усій групі НЕМАЄ жодного рівня!
         if (!hasAnyHousesInGroup) {
           mortgageBtn.style.display = "block";
           sellBtn.style.display = "block";
           mortgageBtn.innerText = `🔒 Заставити (+$${halfPrice})`;
         }
 
-        // КНОПКА ПОКРАЩЕННЯ (Рівномірно)
-       const isMyTurn = currentTurnId && String(currentTurnId) === String(myTgId);
+        const isMyTurn = currentTurnId && String(currentTurnId) === String(myTgId);
         
         if (hasMonopoly && lvl < 5 && lvl <= minLevel) {
           if (!isMyTurn) {
             upgradeBtn.style.display = "block";
-            upgradeBtn.innerText = "❌ Будувати можна тільки у свій хід";
-            upgradeBtn.style.background = "#475569"; // Сірий
-            upgradeBtn.onclick = null; // Вимикаємо клік
+            upgradeBtn.innerText = "❌ Тільки у свій хід";
+            upgradeBtn.style.background = "#475569"; 
+            upgradeBtn.onclick = null; 
           } else if (hasUpgradedThisTurn) {
             upgradeBtn.style.display = "block";
-            upgradeBtn.innerText = "⏳ Дочекайтесь наступного ходу";
+            upgradeBtn.innerText = "⏳ 1 покращення за хід";
             upgradeBtn.style.background = "#475569";
             upgradeBtn.onclick = null;
           } else {
             upgradeBtn.style.display = "block";
             upgradeBtn.innerText = `⬆️ Покращити (-$${halfPrice})`;
-            upgradeBtn.style.background = "#3b82f6"; // Нормальний синій
+            upgradeBtn.style.background = "#3b82f6"; 
             upgradeBtn.onclick = () => sendPropertyAction('upgrade', data.id);
           }
         }
@@ -362,6 +352,7 @@ const tg = window.Telegram.WebApp;
     });
   }
 
+  // Закриття вікна "Шанс" (Task)
   const taskOkBtn = document.getElementById("taskOkBtn");
   if(taskOkBtn) {
     taskOkBtn.addEventListener("click", () => {
@@ -424,19 +415,24 @@ const tg = window.Telegram.WebApp;
   function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
+  // ЗБЕРІГАННЯ ДАНИХ КИДКА ДО АНІМАЦІЇ
   let pendingTaskText = null;
   let pendingBonus = 0;
 
+  // ОНОВЛЕНИЙ КИДОК КУБИКА
   rollBtn.addEventListener("click", async () => {
     if (isRolling || !currentTurnId || currentTurnState !== 'waiting_roll' || String(currentTurnId) !== String(myTgId)) return;
     isRolling = true;
     try {
-      const d1 = rand(1,6); const d2 = rand(1,6); const steps = d1 + d2;
+      const d1 = rand(1,6); 
+      const d2 = rand(1,6); 
+      const steps = d1 + d2;
       diceResult.innerText = `🎲 ${d1} + ${d2} = ${steps}`;
       
       const r = await fetch(`${API}/room/${chatId}/move`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ playerId: Number(myTgId), steps })
+        // ВІДПРАВЛЯЄМО ДАБЛИ
+        body: JSON.stringify({ playerId: Number(myTgId), d1, d2 }) 
       });
 
       if (!r.ok) {
@@ -446,7 +442,7 @@ const tg = window.Telegram.WebApp;
       
       const data = await r.json();
       
-      // ЗБЕРІГАЄМО результат, щоб показати ЙОГО ПІСЛЯ АНІМАЦІЇ
+      // Зберігаємо результати (Шанс/Бонус/Тюрма), покажемо після анімації
       if (data.taskText) {
         pendingTaskText = data.taskText;
       } else if (data.bonus > 0) {
@@ -511,10 +507,9 @@ const tg = window.Telegram.WebApp;
 
     isAnimatingMove = true;
     
-    // 1. АНІМАЦІЯ РУХУ
+    // АНІМАЦІЯ
     await animateTo(room.players);
     
-    // 2. ОНОВЛЕННЯ ДАНИХ (Коли фішки вже доїхали)
     currentTurn = Number(room.currentTurn);
     currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
     myPlayerIndex = players.findIndex(p => p.id === Number(myTgId));
@@ -536,14 +531,20 @@ const tg = window.Telegram.WebApp;
     updateBoardPrices();
     renderPlayers();
 
-    // 3. ПОКАЗУЄМО ВІКНА (Тільки після повної зупинки фішок!)
+    // ПОКАЗ ВІКОН ПІСЛЯ АНІМАЦІЇ (Шанс / Бонус)
     if (pendingTaskText) {
-      document.getElementById("taskText").innerText = pendingTaskText;
-      document.getElementById("taskModal").style.display = "flex";
-      pendingTaskText = null; // Очищаємо, щоб не показало двічі
+      const taskTextEl = document.getElementById("taskText");
+      const taskModal = document.getElementById("taskModal");
+      if (taskTextEl && taskModal) {
+        taskTextEl.innerText = pendingTaskText;
+        taskModal.style.display = "flex";
+      } else {
+        tg.showAlert(pendingTaskText); // Fallback якщо немає HTML вікна
+      }
+      pendingTaskText = null; 
     } else if (pendingBonus > 0) {
       tg.showAlert(`🎉 Ви отримали бонус: $${pendingBonus}!`);
-      pendingBonus = 0; // Очищаємо
+      pendingBonus = 0; 
     }
 
     if (pendingRoom) {
@@ -563,6 +564,7 @@ const tg = window.Telegram.WebApp;
     }
   }
 
+  // ОНОВЛЕНІ КНОПКИ ДІЙ (Логіка В'язниці)
   function updateActionButtons() {
     const me = players[myPlayerIndex];
     if(!me) return;
@@ -572,6 +574,7 @@ const tg = window.Telegram.WebApp;
     document.getElementById("surrenderBtn").style.display = me.active ? "inline-block" : "none";
     document.getElementById("tradeBtn").style.display = canAct ? "inline-block" : "none";
 
+    const payBailBtn = document.getElementById("payBailBtn");
     const rollBtn = document.getElementById("rollBtn");
     const endTurnBtn = document.getElementById("endTurnBtn");
     const decisionPanel = document.getElementById("decisionPanel");
@@ -579,12 +582,29 @@ const tg = window.Telegram.WebApp;
     const auctionBtn = document.getElementById("auctionBtn");
     const payBtn = document.getElementById("payBtn");
 
+    if(payBailBtn) payBailBtn.style.display = "none";
     rollBtn.style.display = "none"; endTurnBtn.style.display = "none";
     decisionPanel.style.display = "none"; buyBtn.style.display = "none";
     auctionBtn.style.display = "none"; payBtn.style.display = "none";
 
     if (canAct) {
-      if (currentTurnState === 'waiting_roll') rollBtn.style.display = "block";
+      const isInJail = me.jail_turns > 0;
+
+      if (currentTurnState === 'waiting_roll') {
+        if (isInJail) {
+          if (me.jail_turns > 3) {
+            rollBtn.style.display = "none";
+            if(payBailBtn) payBailBtn.style.display = "block";
+            diceResult.innerText = "🚨 Спроби вичерпано. Сплатіть заставу!";
+          } else {
+            rollBtn.style.display = "block";
+            if(payBailBtn) payBailBtn.style.display = "block";
+            diceResult.innerText = `👮 В'язниця (Спроба ${me.jail_turns}/3). Дабл або $50.`;
+          }
+        } else {
+          rollBtn.style.display = "block";
+        }
+      } 
       else if (currentTurnState === 'can_end') endTurnBtn.style.display = "block";
       else if (currentTurnState === 'must_buy') {
         decisionPanel.style.display = "flex"; buyBtn.style.display = "block"; auctionBtn.style.display = "block";
@@ -643,6 +663,26 @@ const tg = window.Telegram.WebApp;
     } else {
       auctionModal.style.display = "none";
     }
+  }
+
+  // КНОПКА ЗАПЛАТИТИ ЗАСТАВУ ($50)
+  const payBailBtn = document.getElementById('payBailBtn');
+  if (payBailBtn) {
+    payBailBtn.addEventListener('click', async () => {
+      if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
+      try {
+        const r = await fetch(`${API}/room/${chatId}/pay_bail`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ playerId: myTgId })
+        });
+        if(!r.ok) { 
+          const err = await r.json(); tg.showAlert(err.error || "Не вдалося заплатити."); return; 
+        }
+        const data = await r.json();
+        tg.showAlert(data.msg);
+        await syncRoom();
+      } catch (e) { console.error(e); }
+    });
   }
 
   document.getElementById('auctionBtn').addEventListener('click', async () => {
