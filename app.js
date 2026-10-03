@@ -556,8 +556,20 @@ const tg = window.Telegram.WebApp;
     for (const sp of serverPlayers) {
       const p = players.find(pl => pl.id === Number(sp.id));
       if (!p) continue;
+
       const spPos = Number(sp.pos);
       let steps = (spPos - p.pos + 40) % 40;
+
+      if(steps === 0) continue;
+
+      if(steps > 12 || p.pos === 30 && spPos === 20) {
+        p.pos = spPos;
+        renderPlayers();
+        await sleep(500);
+        continue;
+      }
+
+      
       for (let s = 0; s < steps; s++) {
         p.pos = (p.pos + 1) % 40; renderPlayers(); await sleep(200);
       }
