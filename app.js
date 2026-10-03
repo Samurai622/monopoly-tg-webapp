@@ -569,14 +569,14 @@ const tg = window.Telegram.WebApp;
         continue;
       }
 
-      
+
       for (let s = 0; s < steps; s++) {
         p.pos = (p.pos + 1) % 40; renderPlayers(); await sleep(200);
       }
     }
   }
 
-  // ОНОВЛЕНІ КНОПКИ ДІЙ (Логіка В'язниці)
+  // ОНОВЛЕНІ КНОПКИ ДІЙ
   function updateActionButtons() {
     const me = players[myPlayerIndex];
     if(!me) return;
@@ -595,9 +595,13 @@ const tg = window.Telegram.WebApp;
     const payBtn = document.getElementById("payBtn");
 
     if(payBailBtn) payBailBtn.style.display = "none";
-    rollBtn.style.display = "none"; endTurnBtn.style.display = "none";
-    decisionPanel.style.display = "none"; buyBtn.style.display = "none";
-    auctionBtn.style.display = "none"; payBtn.style.display = "none";
+    rollBtn.style.display = "none"; 
+    endTurnBtn.style.display = "none";
+    decisionPanel.style.display = "none"; 
+    buyBtn.style.display = "none";
+    auctionBtn.style.display = "none"; 
+    payBtn.style.display = "none";
+    diceResult.innerText = ""; // Очищаємо підказки
 
     if (canAct) {
       const isInJail = me.jail_turns > 0;
@@ -605,13 +609,15 @@ const tg = window.Telegram.WebApp;
       if (currentTurnState === 'waiting_roll') {
         if (isInJail) {
           if (me.jail_turns > 3) {
+            // Ліміт спроб вичерпано. ТІЛЬКИ ОПЛАТА.
             rollBtn.style.display = "none";
             if(payBailBtn) payBailBtn.style.display = "block";
-            diceResult.innerText = "🚨 Спроби вичерпано. Сплатіть заставу!";
+            diceResult.innerText = "🚨 3 спроби вичерпано. Сплатіть $50 для виходу.";
           } else {
+            // Є ВИБІР: Заплатити і піти одразу АБО Ризикнути на дабл (і завершити хід)
             rollBtn.style.display = "block";
             if(payBailBtn) payBailBtn.style.display = "block";
-            diceResult.innerText = `👮 В'язниця (Спроба ${me.jail_turns}/3). Дабл або $50.`;
+            diceResult.innerText = `👮 В'язниця (Спроба ${me.jail_turns}/3).\nДабл (вихід без ходу) АБО Заплатити $50 (вийти і піти).`;
           }
         } else {
           rollBtn.style.display = "block";
