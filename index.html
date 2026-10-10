@@ -141,6 +141,58 @@
     </div>
   </div>
 
+  <!-- ВІКНО СТВОРЕННЯ ОБМІНУ -->
+  <div id="tradeModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="border-color: #38bdf8; max-height: 85vh; overflow-y: auto;">
+      <button id="closeTradeBtn" class="close-btn">✖</button>
+      <h2 style="color: #38bdf8; margin-top: 15px;">🤝 Створити Обмін</h2>
+      
+      <div class="modal-body" style="background: transparent;">
+        <!-- Вибір суперника -->
+        <label style="color:#94a3b8; font-size:12px;">Оберіть партнера по угоді:</label>
+        <select id="tradeTargetSelect" class="auction-input" style="margin-bottom: 15px;"></select>
+
+        <!-- Моя пропозиція -->
+        <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid #334155; margin-bottom:10px;">
+          <h4 style="color:#4ade80; margin:0 0 5px 0;">🟢 Ви віддаєте:</h4>
+          <input type="number" id="tradeOfferMoney" placeholder="Доплата ($)" class="auction-input" style="padding:6px; margin-bottom:8px;">
+          <div id="tradeMyPropsList" style="text-align:left; max-height:100px; overflow-y:auto; font-size:12px;"></div>
+        </div>
+
+        <!-- Що я хочу взамін -->
+        <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid #334155; margin-bottom:15px;">
+          <h4 style="color:#f87171; margin:0 0 5px 0;">🔴 Ви хочете отримати:</h4>
+          <input type="number" id="tradeRequestMoney" placeholder="Вимагати грошей ($)" class="auction-input" style="padding:6px; margin-bottom:8px;">
+          <div id="tradeTheirPropsList" style="text-align:left; max-height:100px; overflow-y:auto; font-size:12px;"></div>
+        </div>
+
+        <button id="sendTradeOfferBtn" class="action-btn" style="background:#38bdf8; color:#020617; width:100%; font-size:15px;">
+          📨 Запропонувати угоду
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ВІКНО ВХІДНОЇ ПРОПОЗИЦІЇ (Для суперника) -->
+  <div id="incomingTradeModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="border-color: #38bdf8; background: #0f172a;">
+      <h2 style="color: #38bdf8; margin-top: 15px;">🤝 Пропозиція обміну!</h2>
+      <div class="modal-body" style="background: transparent;">
+        <p id="incomingTradeSender" style="font-weight:bold; color:white;"></p>
+        
+        <div style="text-align:left; background:#1e293b; padding:10px; border-radius:8px; margin:10px 0; font-size:13px;">
+          <p style="color:#4ade80; margin:4px 0;"><b>Вам пропонують:</b> <span id="incomingTradeGives"></span></p>
+          <p style="color:#f87171; margin:4px 0;"><b>Взамін хочуть:</b> <span id="incomingTradeWants"></span></p>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:15px;">
+          <button id="acceptTradeBtn" class="action-btn" style="background:#22c55e;">✅ Прийняти</button>
+          <button id="declineTradeBtn" class="action-btn" style="background:#ef4444;">❌ Відхилити</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="./app.js"></script>
 </body>
 </html>

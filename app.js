@@ -352,7 +352,6 @@ const tg = window.Telegram.WebApp;
     });
   }
 
-  // Закриття вікна "Шанс" (Task)
   const taskOkBtn = document.getElementById("taskOkBtn");
   if(taskOkBtn) {
     taskOkBtn.addEventListener("click", () => {
@@ -415,11 +414,9 @@ const tg = window.Telegram.WebApp;
   function rand(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
   function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-  // ЗБЕРІГАННЯ ДАНИХ КИДКА ДО АНІМАЦІЇ
   let pendingTaskText = null;
   let pendingBonus = 0;
 
-  // ОНОВЛЕНИЙ КИДОК КУБИКА
   rollBtn.addEventListener("click", async () => {
     if (isRolling || !currentTurnId || currentTurnState !== 'waiting_roll' || String(currentTurnId) !== String(myTgId)) return;
     isRolling = true;
@@ -431,7 +428,6 @@ const tg = window.Telegram.WebApp;
       
       const r = await fetch(`${API}/room/${chatId}/move`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
-        // ВІДПРАВЛЯЄМО ДАБЛИ
         body: JSON.stringify({ playerId: Number(myTgId), d1, d2 }) 
       });
 
@@ -442,7 +438,6 @@ const tg = window.Telegram.WebApp;
       
       const data = await r.json();
       
-      // Зберігаємо результати (Шанс/Бонус/Тюрма), покажемо після анімації
       if (data.taskText) {
         pendingTaskText = data.taskText;
       } else if (data.bonus > 0) {
@@ -502,6 +497,7 @@ const tg = window.Telegram.WebApp;
 
       updateBoardPrices();
       renderPlayers();
+      checkIncomingTrade(room.pendingTrade); // ПЕРЕВІРКА ВХІДНОГО ОБМІНУ
       return;
     }
 
@@ -524,17 +520,16 @@ const tg = window.Telegram.WebApp;
     for (const sp of room.players) {
       const p = players.find(pl => pl.id === Number(sp.id));
       if (!p) continue;
-      p.pos = Number(sp.pos); 
-      p.money = sp.money; 
-      p.active = sp.active; 
-      p.color = sp.color;
-      p.jail_turns = Number(sp.jail_turns) || 0; 
+      p.pos = Number(sp.pos); p.money = sp.money; p.active = sp.active; p.color = sp.color;
+      p.jail_turns = Number(sp.jail_turns) || 0;
     }
     isAnimatingMove = false;
 
     updateBoardPrices();
     renderPlayers();
+    checkIncomingTrade(room.pendingTrade); // ПЕРЕВІРКА ВХІДНОГО ОБМІНУ
 
+    // ПОКАЗ ВІКОН ПІСЛЯ АНІМАЦІЇ
     if (pendingTaskText) {
       const taskTextEl = document.getElementById("taskText");
       const taskModal = document.getElementById("taskModal");
@@ -559,27 +554,25 @@ const tg = window.Telegram.WebApp;
     for (const sp of serverPlayers) {
       const p = players.find(pl => pl.id === Number(sp.id));
       if (!p) continue;
-
       const spPos = Number(sp.pos);
       let steps = (spPos - p.pos + 40) % 40;
+      if (steps === 0) continue;
 
-      if(steps === 0) continue;
-
-      if(steps > 12 || p.pos === 30 && spPos === 20) {
+      if (steps > 12 || (p.pos === 30 && spPos === 20)) {
         p.pos = spPos;
         renderPlayers();
         await sleep(500);
         continue;
       }
 
-
       for (let s = 0; s < steps; s++) {
-        p.pos = (p.pos + 1) % 40; renderPlayers(); await sleep(200);
+        p.pos = (p.pos + 1) % 40; 
+        renderPlayers(); 
+        await sleep(200);
       }
     }
   }
 
-  // ОНОВЛЕНІ КНОПКИ ДІЙ
   function updateActionButtons() {
     const me = players[myPlayerIndex];
     if(!me) return;
@@ -598,13 +591,9 @@ const tg = window.Telegram.WebApp;
     const payBtn = document.getElementById("payBtn");
 
     if(payBailBtn) payBailBtn.style.display = "none";
-    rollBtn.style.display = "none"; 
-    endTurnBtn.style.display = "none";
-    decisionPanel.style.display = "none"; 
-    buyBtn.style.display = "none";
-    auctionBtn.style.display = "none"; 
-    payBtn.style.display = "none";
-    diceResult.innerText = ""; // Очищаємо підказки
+    rollBtn.style.display = "none"; endTurnBtn.style.display = "none";
+    decisionPanel.style.display = "none"; buyBtn.style.display = "none";
+    auctionBtn.style.display = "none"; payBtn.style.display = "none";
 
     if (canAct) {
       const isInJail = me.jail_turns > 0;
@@ -612,15 +601,13 @@ const tg = window.Telegram.WebApp;
       if (currentTurnState === 'waiting_roll') {
         if (isInJail) {
           if (me.jail_turns > 3) {
-            // Ліміт спроб вичерпано. ТІЛЬКИ ОПЛАТА.
             rollBtn.style.display = "none";
             if(payBailBtn) payBailBtn.style.display = "block";
-            diceResult.innerText = "🚨 3 спроби вичерпано. Сплатіть $50 для виходу.";
+            diceResult.innerText = "🚨 Спроби вичерпано. Сплатіть заставу!";
           } else {
-            // Є ВИБІР: Заплатити і піти одразу АБО Ризикнути на дабл (і завершити хід)
             rollBtn.style.display = "block";
             if(payBailBtn) payBailBtn.style.display = "block";
-            diceResult.innerText = `👮 В'язниця (Спроба ${me.jail_turns}/3).`;
+            diceResult.innerText = `👮 В'язниця (Спроба ${me.jail_turns}/3). Дабл або $50.`;
           }
         } else {
           rollBtn.style.display = "block";
@@ -632,7 +619,8 @@ const tg = window.Telegram.WebApp;
       } else if (currentTurnState === 'must_pay') {
         decisionPanel.style.display = "flex"; payBtn.style.display = "block";
       } else if (currentTurnState === 'casino_action') {
-        document.getElementById("casinoModal").style.display = "flex";
+        const casinoModal = document.getElementById("casinoModal");
+        if (casinoModal) casinoModal.style.display = "flex";
       }
     }
   }
@@ -686,7 +674,7 @@ const tg = window.Telegram.WebApp;
     }
   }
 
-  // КНОПКА ЗАПЛАТИТИ ЗАСТАВУ ($50)
+  // КНОПКА ЗАСТАВИ
   const payBailBtn = document.getElementById('payBailBtn');
   if (payBailBtn) {
     payBailBtn.addEventListener('click', async () => {
@@ -705,6 +693,190 @@ const tg = window.Telegram.WebApp;
       } catch (e) { console.error(e); }
     });
   }
+
+  // ==========================================
+  // 🤝 ПОВНА ЛОГІКА ОБМІНУ (TRADE)
+  // ==========================================
+
+  // Допоміжна функція: малює фірми з галочками
+  function renderTradePropsList(containerId, ownerDbId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    // Можна міняти лише ті, що НЕ в заставі і БЕЗ будинків
+    const props = currentProperties.filter(p => p.owner_id === ownerDbId && !p.is_mortgaged && (p.level || 0) === 0);
+    
+    if (props.length === 0) {
+      container.innerHTML = '<span style="color:#64748b;">Немає доступних фірм</span>';
+      return;
+    }
+    
+    props.forEach(p => {
+      const cell = cellsData[p.cell_id];
+      const label = document.createElement('label');
+      label.style.display = 'block';
+      label.style.margin = '4px 0';
+      label.style.cursor = 'pointer';
+      label.innerHTML = `
+        <input type="checkbox" value="${p.cell_id}" style="margin-right:6px; accent-color:#38bdf8;">
+        <span style="color:${cell.groupColor || 'white'}; font-weight:bold;">${cell.name}</span>
+      `;
+      container.appendChild(label);
+    });
+  }
+
+  // Відкриття вікна створення обміну
+  document.getElementById('tradeBtn').addEventListener('click', () => {
+    const me = players[myPlayerIndex];
+    if (!me) return;
+
+    const targetSelect = document.getElementById('tradeTargetSelect');
+    targetSelect.innerHTML = '';
+
+    const otherPlayers = players.filter(p => p.active && p.db_id !== me.db_id);
+    if (otherPlayers.length === 0) {
+      tg.showAlert("Немає інших активних гравців для обміну!");
+      return;
+    }
+
+    otherPlayers.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.db_id;
+      opt.innerText = p.name;
+      targetSelect.appendChild(opt);
+    });
+
+    // Відображаємо мої фірми
+    renderTradePropsList('tradeMyPropsList', me.db_id);
+
+    // Відображаємо фірми першого суперника в списку
+    renderTradePropsList('tradeTheirPropsList', Number(targetSelect.value));
+
+    // Коли перемикаємо гравця
+    targetSelect.onchange = () => {
+      renderTradePropsList('tradeTheirPropsList', Number(targetSelect.value));
+    };
+
+    // Очищаємо суми
+    document.getElementById('tradeOfferMoney').value = '';
+    document.getElementById('tradeRequestMoney').value = '';
+
+    document.getElementById('tradeModal').style.display = 'flex';
+  });
+
+  // Закриття вікна створення обміну
+  const closeTradeBtn = document.getElementById('closeTradeBtn');
+  if (closeTradeBtn) {
+    closeTradeBtn.addEventListener('click', () => {
+      document.getElementById('tradeModal').style.display = 'none';
+    });
+  }
+
+  // Відправка пропозиції
+  document.getElementById('sendTradeOfferBtn').addEventListener('click', async () => {
+    const targetSelect = document.getElementById('tradeTargetSelect');
+    const receiverDbId = Number(targetSelect.value);
+    const offerMoney = Number(document.getElementById('tradeOfferMoney').value) || 0;
+    const requestMoney = Number(document.getElementById('tradeRequestMoney').value) || 0;
+
+    const offerProps = Array.from(document.querySelectorAll('#tradeMyPropsList input:checked')).map(cb => Number(cb.value));
+    const requestProps = Array.from(document.querySelectorAll('#tradeTheirPropsList input:checked')).map(cb => Number(cb.value));
+
+    if (offerProps.length === 0 && offerMoney === 0 && requestProps.length === 0 && requestMoney === 0) {
+      tg.showAlert("Оберіть хоча б фірму або вкажіть гроші!");
+      return;
+    }
+
+    try {
+      const r = await fetch(`${API}/room/${chatId}/propose_trade`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          senderId: myTgId,
+          receiverDbId,
+          offerProps,
+          offerMoney,
+          requestProps,
+          requestMoney
+        })
+      });
+
+      if (!r.ok) {
+        const err = await r.json();
+        tg.showAlert(err.error || "Помилка обміну");
+        return;
+      }
+
+      document.getElementById('tradeModal').style.display = 'none';
+      tg.showAlert("Пропозицію надіслано! Очікуємо відповіді...");
+      await syncRoom();
+    } catch (e) {
+      console.error(e);
+    }
+  });
+
+  // Перевірка вхідних пропозицій
+  function checkIncomingTrade(trade) {
+    const incomingModal = document.getElementById('incomingTradeModal');
+    if (!incomingModal) return;
+
+    const me = players[myPlayerIndex];
+    if (!me) return;
+
+    // Якщо є пропозиція і вона адресована МЕНІ
+    if (trade && trade.receiverDbId === me.db_id) {
+      const sender = players.find(p => p.db_id === trade.senderDbId);
+      document.getElementById('incomingTradeSender').innerText = `Гравець ${sender ? sender.name : 'Суперник'} пропонує вам обмін:`;
+
+      // Що пропонують
+      const givesProps = trade.offerProps.map(id => cellsData[id]?.name).filter(Boolean);
+      let givesText = givesProps.join(', ');
+      if (trade.offerMoney > 0) {
+        givesText += (givesText ? ' + ' : '') + `$${trade.offerMoney}`;
+      }
+      document.getElementById('incomingTradeGives').innerText = givesText || 'Нічого';
+
+      // Що хочуть
+      const wantsProps = trade.requestProps.map(id => cellsData[id]?.name).filter(Boolean);
+      let wantsText = wantsProps.join(', ');
+      if (trade.requestMoney > 0) {
+        wantsText += (wantsText ? ' + ' : '') + `$${trade.requestMoney}`;
+      }
+      document.getElementById('incomingTradeWants').innerText = wantsText || 'Нічого';
+
+      incomingModal.style.display = 'flex';
+    } else {
+      incomingModal.style.display = 'none';
+    }
+  }
+
+  // Відповідь на обмін (Прийняти / Відхилити)
+  async function respondTrade(accept) {
+    try {
+      const r = await fetch(`${API}/room/${chatId}/respond_trade`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ playerId: myTgId, accept })
+      });
+
+      const data = await r.json();
+      if (!r.ok) {
+        tg.showAlert(data.error || "Помилка");
+        return;
+      }
+      tg.showAlert(data.msg);
+      document.getElementById('incomingTradeModal').style.display = 'none';
+      await syncRoom();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  document.getElementById('acceptTradeBtn').addEventListener('click', () => respondTrade(true));
+  document.getElementById('declineTradeBtn').addEventListener('click', () => respondTrade(false));
+
+  // ==========================================
+  // КНОПКИ ГРИ
+  // ==========================================
 
   document.getElementById('auctionBtn').addEventListener('click', async () => {
     if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
@@ -780,7 +952,7 @@ const tg = window.Telegram.WebApp;
   document.getElementById('endTurnBtn').addEventListener('click', async () => {
     if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
     try {
-      const r = await fetch(`${API}/room/${chatId}/end_turn`, {
+      await fetch(`${API}/room/${chatId}/end_turn`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
@@ -800,72 +972,6 @@ const tg = window.Telegram.WebApp;
         await syncRoom();
       } catch (e) { console.error(e); }
     });
-  });
-
-  document.getElementById('tradeBtn').addEventListener('click', () => alert("В розробці"));
-
-  // === ЛОГІКА КАЗИНО ===
-  let selectedBetType = null;
-  const casinoBetBtns = document.querySelectorAll('.casino-bet-btn');
-
-  // Вибір на що ставити
-  casinoBetBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Скидаємо кольори всіх кнопок
-      casinoBetBtns.forEach(b => {
-        b.style.background = "#475569";
-        b.style.border = "none";
-      });
-      // Виділяємо натиснуту
-      btn.style.background = "#3b82f6";
-      btn.style.border = "1px solid white";
-      selectedBetType = btn.getAttribute('data-bet');
-    });
-  });
-
-  // Грати
-  document.getElementById('casinoPlayBtn').addEventListener('click', async () => {
-    const betAmount = Number(document.getElementById('casinoBetInput').value);
-    
-    if (!betAmount || betAmount <= 0) {
-      tg.showAlert("Введіть суму ставки!"); return;
-    }
-    if (!selectedBetType) {
-      tg.showAlert("Оберіть, на що ставити (Парне, Непарне або Число)!"); return;
-    }
-
-    try {
-      const r = await fetch(`${API}/room/${chatId}/play_casino`, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ playerId: myTgId, betAmount, betType: selectedBetType })
-      });
-      if (!r.ok) {
-        const err = await r.json(); tg.showAlert(err.error || "Помилка казино"); return;
-      }
-      
-      const data = await r.json();
-      tg.showAlert(data.resultMsg); // Показує, що випало і чи виграв
-      
-      document.getElementById('casinoModal').style.display = "none";
-      document.getElementById('casinoBetInput').value = '';
-      selectedBetType = null;
-      casinoBetBtns.forEach(b => { b.style.background = "#475569"; b.style.border = "none"; });
-      
-      await syncRoom();
-    } catch (e) { console.error(e); }
-  });
-
-  // Відмовитись
-  document.getElementById('casinoSkipBtn').addEventListener('click', async () => {
-    try {
-      const r = await fetch(`${API}/room/${chatId}/skip_casino`, {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ playerId: myTgId })
-      });
-      if (!r.ok) return;
-      document.getElementById('casinoModal').style.display = "none";
-      await syncRoom();
-    } catch (e) { console.error(e); }
   });
 
   connectToServer();
