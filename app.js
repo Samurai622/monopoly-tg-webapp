@@ -1,17 +1,6 @@
 const tg = window.Telegram.WebApp;
   tg.expand();
 
-  console.log("Telegram platform:", tg.platform);
-  console.log("HapticFeedback:", tg.HapticFeedback);
-  console.log(
-      "impactOccurred:",
-      typeof tg.HapticFeedback?.impactOccurred
-  );
-
-  tg.ready();
-
-  tg.HapticFeedback?.impactOccurred("heavy");
-
   if (!tg.initDataUnsafe?.user) {
     alert("Відкрий гру через Telegram");
     throw new Error("No Telegram user");
@@ -517,7 +506,7 @@ const tg = window.Telegram.WebApp;
       currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
         if (currentTurnId === String(myTgId) && lastTurnId !== String(myTgId) && lastTurnId !== null) {
           if(window.Telegram?.WebApp?.HapticFeedback) {
-            window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+            window.Telegram.WebApp.HapticFeedback.impactOccurred('success');
           }
         }
         lastTurnId = currentTurnId;
@@ -545,7 +534,7 @@ const tg = window.Telegram.WebApp;
     currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
       if (currentTurnId === String(myTgId) && lastTurnId !== String(myTgId) && lastTurnId !== null) {
         if(window.Telegram?.WebApp?.HapticFeedback) {
-          window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+          window.Telegram.WebApp.HapticFeedback.impactOccurred('success');
         }
       }
       lastTurnId = currentTurnId;
