@@ -38,7 +38,7 @@ const tg = window.Telegram.WebApp;
     {name:"Lavazza", img:"images/lavazza.png", groupColor: "#db2777", price: 380, rent: 38},
     {name:"BMW", img:"images/bmw.png", groupColor: "#475569", price: 1000, rent: 50, isAuto: true}, 
     {name:"McDonalds", img:"images/mcdonalds.png", groupColor: "#f97316", price: 260, rent: 26}, 
-    {name:"KFS", img:"images/kfs.png", groupColor: "#f97316", price: 220, rent: 22},
+    {name:"KFC", img:"images/kfc.png", groupColor: "#f97316", price: 220, rent: 22},
     {name:"Task", img:"images/task(left).png"},
     {name:"Pizza Hut", img:"images/pizza hut.png", groupColor: "#f97316", price: 200, rent: 20},
     {name:"Free Parking", img:"images/jail.png"}, 
@@ -129,7 +129,7 @@ const tg = window.Telegram.WebApp;
   let currentTurnState = 'waiting_roll';
   let isRolling = false;
 
-  // МАЛЮЄМО РАМКИ, ЦІНИ ТА ЗІРОЧКИ
+  // ОНОВЛЕННЯ ЦІННИКІВ ТА ЗІРОЧОК
   function updateBoardPrices() {
     document.querySelectorAll('.cell').forEach(c => {
       c.style.boxShadow = ''; c.style.border = '1px solid #334155'; 
@@ -373,6 +373,23 @@ const tg = window.Telegram.WebApp;
     } catch (e) { console.error(e); }
   }
 
+  function updateGameLog(logs) {
+    const logList = document.getElementById("gameLogList");
+    if (!logList || !logs) return;
+
+    if (logs.length === 0) {
+      logList.innerHTML = `<div class="log-entry">🎲 Гра почалася! Успіхів!</div>`;
+      return;
+    }
+
+    logList.innerHTML = logs.map(msg => `<div class="log-entry">${msg}</div>`).join('');
+    
+    const container = document.getElementById("gameLogContainer");
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  }
+
   function renderPlayers() {
     playersBox.querySelectorAll(".player").forEach(p => p.remove());
     document.querySelectorAll(".token").forEach(t => t.remove());
@@ -497,13 +514,13 @@ const tg = window.Telegram.WebApp;
 
       updateBoardPrices();
       renderPlayers();
-      checkIncomingTrade(room.pendingTrade); // ПЕРЕВІРКА ВХІДНОГО ОБМІНУ
+      checkIncomingTrade(room.pendingTrade);
+      updateGameLog(room.gameLog || []);
       return;
     }
 
     isAnimatingMove = true;
     
-    // АНІМАЦІЯ
     await animateTo(room.players);
     
     currentTurn = Number(room.currentTurn);
@@ -520,16 +537,19 @@ const tg = window.Telegram.WebApp;
     for (const sp of room.players) {
       const p = players.find(pl => pl.id === Number(sp.id));
       if (!p) continue;
-      p.pos = Number(sp.pos); p.money = sp.money; p.active = sp.active; p.color = sp.color;
+      p.pos = Number(sp.pos); 
+      p.money = sp.money; 
+      p.active = sp.active; 
+      p.color = sp.color;
       p.jail_turns = Number(sp.jail_turns) || 0;
     }
     isAnimatingMove = false;
 
     updateBoardPrices();
     renderPlayers();
-    checkIncomingTrade(room.pendingTrade); // ПЕРЕВІРКА ВХІДНОГО ОБМІНУ
+    checkIncomingTrade(room.pendingTrade);
+    updateGameLog(room.gameLog || []);
 
-    // ПОКАЗ ВІКОН ПІСЛЯ АНІМАЦІЇ
     if (pendingTaskText) {
       const taskTextEl = document.getElementById("taskText");
       const taskModal = document.getElementById("taskModal");
@@ -573,6 +593,7 @@ const tg = window.Telegram.WebApp;
     }
   }
 
+  // ОНОВЛЕНІ КНОПКИ ДІЙ (Очищає в'язницю автоматично!)
   function updateActionButtons() {
     const me = players[myPlayerIndex];
     if(!me) return;
@@ -596,7 +617,7 @@ const tg = window.Telegram.WebApp;
     auctionBtn.style.display = "none"; payBtn.style.display = "none";
 
     if (canAct) {
-      const isInJail = me.jail_turns > 0;
+      const isInJail = Number(me.jail_turns) > 0;
 
       if (currentTurnState === 'waiting_roll') {
         if (isInJail) {
@@ -611,6 +632,10 @@ const tg = window.Telegram.WebApp;
           }
         } else {
           rollBtn.style.display = "block";
+          // ОЧИЩАЄМО НАПИС В'ЯЗНИЦІ, ЯКЩО МИ ВЖЕ ВІЛЬНІ
+          if (diceResult.innerText.includes("В'язниця") || diceResult.innerText.includes("Спроби")) {
+            diceResult.innerText = "";
+          }
         }
       } 
       else if (currentTurnState === 'can_end') endTurnBtn.style.display = "block";
@@ -674,7 +699,7 @@ const tg = window.Telegram.WebApp;
     }
   }
 
-  // КНОПКА ЗАСТАВИ
+  // КНОПКА ЗАСТАВИ (МИТТЄВЕ ОНОВЛЕННЯ!)
   const payBailBtn = document.getElementById('payBailBtn');
   if (payBailBtn) {
     payBailBtn.addEventListener('click', async () => {
@@ -689,6 +714,16 @@ const tg = window.Telegram.WebApp;
         }
         const data = await r.json();
         tg.showAlert(data.msg);
+
+        // МИТТЄВО ЗВІЛЬНЯЄМО ГРАВЦЯ В ПАМ'ЯТІ ТЕЛЕФОНУ
+        const me = players[myPlayerIndex];
+        if (me) {
+          me.jail_turns = 0;
+          me.money = Number(me.money) - 50;
+        }
+        renderPlayers();
+        updateActionButtons();
+
         await syncRoom();
       } catch (e) { console.error(e); }
     });
@@ -698,11 +733,9 @@ const tg = window.Telegram.WebApp;
   // 🤝 ПОВНА ЛОГІКА ОБМІНУ (TRADE)
   // ==========================================
 
-  // Допоміжна функція: малює фірми з галочками
   function renderTradePropsList(containerId, ownerDbId) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
-    // Можна міняти лише ті, що НЕ в заставі і БЕЗ будинків
     const props = currentProperties.filter(p => p.owner_id === ownerDbId && !p.is_mortgaged && (p.level || 0) === 0);
     
     if (props.length === 0) {
@@ -724,7 +757,6 @@ const tg = window.Telegram.WebApp;
     });
   }
 
-  // Відкриття вікна створення обміну
   document.getElementById('tradeBtn').addEventListener('click', () => {
     const me = players[myPlayerIndex];
     if (!me) return;
@@ -745,25 +777,18 @@ const tg = window.Telegram.WebApp;
       targetSelect.appendChild(opt);
     });
 
-    // Відображаємо мої фірми
     renderTradePropsList('tradeMyPropsList', me.db_id);
-
-    // Відображаємо фірми першого суперника в списку
     renderTradePropsList('tradeTheirPropsList', Number(targetSelect.value));
 
-    // Коли перемикаємо гравця
     targetSelect.onchange = () => {
       renderTradePropsList('tradeTheirPropsList', Number(targetSelect.value));
     };
 
-    // Очищаємо суми
     document.getElementById('tradeOfferMoney').value = '';
     document.getElementById('tradeRequestMoney').value = '';
-
     document.getElementById('tradeModal').style.display = 'flex';
   });
 
-  // Закриття вікна створення обміну
   const closeTradeBtn = document.getElementById('closeTradeBtn');
   if (closeTradeBtn) {
     closeTradeBtn.addEventListener('click', () => {
@@ -771,7 +796,6 @@ const tg = window.Telegram.WebApp;
     });
   }
 
-  // Відправка пропозиції
   document.getElementById('sendTradeOfferBtn').addEventListener('click', async () => {
     const targetSelect = document.getElementById('tradeTargetSelect');
     const receiverDbId = Number(targetSelect.value);
@@ -814,7 +838,6 @@ const tg = window.Telegram.WebApp;
     }
   });
 
-  // Перевірка вхідних пропозицій
   function checkIncomingTrade(trade) {
     const incomingModal = document.getElementById('incomingTradeModal');
     if (!incomingModal) return;
@@ -822,12 +845,10 @@ const tg = window.Telegram.WebApp;
     const me = players[myPlayerIndex];
     if (!me) return;
 
-    // Якщо є пропозиція і вона адресована МЕНІ
     if (trade && trade.receiverDbId === me.db_id) {
       const sender = players.find(p => p.db_id === trade.senderDbId);
       document.getElementById('incomingTradeSender').innerText = `Гравець ${sender ? sender.name : 'Суперник'} пропонує вам обмін:`;
 
-      // Що пропонують
       const givesProps = trade.offerProps.map(id => cellsData[id]?.name).filter(Boolean);
       let givesText = givesProps.join(', ');
       if (trade.offerMoney > 0) {
@@ -835,7 +856,6 @@ const tg = window.Telegram.WebApp;
       }
       document.getElementById('incomingTradeGives').innerText = givesText || 'Нічого';
 
-      // Що хочуть
       const wantsProps = trade.requestProps.map(id => cellsData[id]?.name).filter(Boolean);
       let wantsText = wantsProps.join(', ');
       if (trade.requestMoney > 0) {
@@ -849,7 +869,6 @@ const tg = window.Telegram.WebApp;
     }
   }
 
-  // Відповідь на обмін (Прийняти / Відхилити)
   async function respondTrade(accept) {
     try {
       const r = await fetch(`${API}/room/${chatId}/respond_trade`, {
