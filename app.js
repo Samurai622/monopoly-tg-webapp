@@ -18,7 +18,7 @@ const tg = window.Telegram.WebApp;
   let isAnimatingMove = false;
   let pendingRoom = null;
   let hasUpgradedThisTurn = false;
-  const lastTurnId = null;
+  let lastTurnId = null;
 
   /* Масив клітинок */
   const cellsData = [
