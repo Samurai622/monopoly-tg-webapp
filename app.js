@@ -18,6 +18,7 @@ const tg = window.Telegram.WebApp;
   let isAnimatingMove = false;
   let pendingRoom = null;
   let hasUpgradedThisTurn = false;
+  const lastTurnId = null;
 
   /* Масив клітинок */
   const cellsData = [
@@ -503,6 +504,12 @@ const tg = window.Telegram.WebApp;
       players = room.players.map(p => ({ ...p, id: Number(p.id) }));
       currentTurn = Number(room.currentTurn);
       currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
+        if (currentTurnId === String(myTgId) && lastTurnId !== String(myTgId) && lastTurnId !== null) {
+          if(window.Telegram?.WebApp?.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+          }
+        }
+        lastTurnId = currentTurnId;
       myPlayerIndex = players.findIndex(p => p.id === Number(myTgId));
       currentTurnState = room.turnState || 'waiting_roll';
       hasUpgradedThisTurn = room.hasUpgradedThisTurn || false;
@@ -525,6 +532,12 @@ const tg = window.Telegram.WebApp;
     
     currentTurn = Number(room.currentTurn);
     currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
+      if (currentTurnId === String(myTgId) && lastTurnId !== String(myTgId) && lastTurnId !== null) {
+        if(window.Telegram?.WebApp?.HapticFeedback) {
+          window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+        }
+      }
+      lastTurnId = currentTurnId;
     myPlayerIndex = players.findIndex(p => p.id === Number(myTgId));
     currentTurnState = room.turnState || 'waiting_roll';
     hasUpgradedThisTurn = room.hasUpgradedThisTurn || false;
