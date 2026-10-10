@@ -1,6 +1,17 @@
 const tg = window.Telegram.WebApp;
   tg.expand();
 
+  console.log("Telegram platform:", tg.platform);
+  console.log("HapticFeedback:", tg.HapticFeedback);
+  console.log(
+      "impactOccurred:",
+      typeof tg.HapticFeedback?.impactOccurred
+  );
+
+  tg.ready();
+
+  tg.HapticFeedback?.impactOccurred("heavy");
+
   if (!tg.initDataUnsafe?.user) {
     alert("Відкрий гру через Telegram");
     throw new Error("No Telegram user");
