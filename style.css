@@ -6,17 +6,18 @@ body {
   margin: 0;
   background: #020617;
   height: 100vh;
+  width: 100vw;
   font-family: Arial, sans-serif;
   color: white;
   overflow: hidden;
 }
 
-/* ===== ЛЕЙАУТ ===== */
+/* ===== ЛЕЙАУТ Мобільна версія ===== */
 #app {
   display: flex;
   flex-direction: column;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
 }
 
 /* ===== ПАНЕЛЬ ГРАВЦІВ ===== */
@@ -30,93 +31,54 @@ body {
   gap: 10px;
   overflow-x: auto;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-#players h2 {
-  display: none;
-}
+#players h2 { display: none; }
 
 .player {
   border: 1px solid #334155;
   border-left: 6px solid gray;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
-  font-size: 13px;
-  min-width: 120px;
+  font-size: 12px;
+  min-width: 110px;
   flex-shrink: 0;
 }
 
-.player.active {
-  border-color: #38bdf8;
-  background: #082f49;
-}
+.player.active { border-color: #38bdf8; background: #082f49; }
+.money { font-size: 11px; color: #a5b4fc; margin-top: 4px; }
 
-.money {
-  font-size: 12px;
-  color: #a5b4fc;
-  margin-top: 4px;
-}
-
-/* ===== ПАНЕЛЬ ДОДАТКОВИХ ДІЙ ===== */
-#actionPanel {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
-  align-items: center;
-}
-
+#actionPanel { display: flex; gap: 6px; margin-left: auto; align-items: center; }
 #actionPanel button {
-  padding: 6px 12px;
-  font-size: 12px;
-  font-weight: bold;
-  text-transform: uppercase;
-  border-radius: 6px;
-  cursor: pointer;
-  background: rgba(15, 23, 42, 0.6);
-  transition: all 0.2s ease-in-out;
+  padding: 6px 10px; font-size: 11px; font-weight: bold; text-transform: uppercase;
+  border-radius: 6px; cursor: pointer; background: rgba(15, 23, 42, 0.6);
 }
+#surrenderBtn { border: 1px solid #ef4444; color: #ef4444; }
+#tradeBtn { border: 1px solid #38bdf8; color: #38bdf8; }
 
-#surrenderBtn {
-  border: 1px solid #ef4444;
-  color: #ef4444;
-}
-
-#surrenderBtn:hover {
-  background: #ef4444;
-  color: white;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
-}
-
-#tradeBtn {
-  border: 1px solid #38bdf8;
-  color: #38bdf8;
-}
-
-#tradeBtn:hover {
-  background: #38bdf8;
-  color: #020617;
-  box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
-}
-
-/* ===== ЦЕНТР І ДОШКА ===== */
+/* ===== ІГРОВА ЗОНА ===== */
 #game {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start; /* На телефоні все йде зверху вниз */
   align-items: center;
-  position: relative;
   padding: 10px;
+  overflow-y: auto; /* Дозволяємо прокрутку, якщо екран дуже маленький */
+  width: 100%;
 }
 
+/* ===== ДОШКА ===== */
 #board {
   width: 100%;
-  max-width: 400px;
-  aspect-ratio: 1 / 1;
+  max-width: 95vw; /* Не вилазить за краї екрану */
+  aspect-ratio: 1 / 1; /* Завжди квадрат! */
   display: grid;
   grid-template-columns: 2fr repeat(9, 1fr) 2fr;
   grid-template-rows: 2fr repeat(9, 1fr) 2fr;
   gap: 2px;
+  flex-shrink: 0;
 }
 
 .cell {
@@ -124,9 +86,10 @@ body {
   position: relative;
   background-size: cover;
   background-position: center;
+  background-color: white; /* Щоб картинки не зливалися */
 }
 
-/* ЦЕНТР ДОШКИ (ЛОГО + ІСТОРІЯ) */
+/* ===== ЦЕНТР ДОШКИ ===== */
 #center {
   grid-column: 2 / 11;
   grid-row: 2 / 11;
@@ -135,61 +98,40 @@ body {
   justify-content: center;
   align-items: center;
   padding: 4px;
-  width: 100%;
-  height: 100%;
+  background: #020617;
   overflow: hidden;
 }
 
 #centerLogo {
-  font-size: 18px;
+  font-size: min(5vw, 24px); /* Адаптивний шрифт */
   font-weight: 900;
   color: #38bdf8;
   letter-spacing: 2px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   text-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
 }
 
 #gameLogContainer {
-  width: 90%;
-  height: 60%;
-  max-height: 120px;
+  width: 95%;
+  height: 65%;
   background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(4px);
   border: 1px solid #334155;
   border-radius: 6px;
-  padding: 6px 8px;
+  padding: 6px;
   overflow-y: auto;
-  box-shadow: inset 0 0 8px rgba(0,0,0,0.6);
 }
 
 .log-entry {
-  font-size: 9px;
+  font-size: min(2.5vw, 11px);
   line-height: 1.3;
   color: #cbd5e1;
   margin-bottom: 3px;
   padding-bottom: 2px;
   border-bottom: 1px solid rgba(51, 65, 85, 0.3);
 }
+.log-entry:last-child { border-bottom: none; color: #38bdf8; font-weight: bold; }
 
-.log-entry:last-child {
-  border-bottom: none;
-  color: #38bdf8;
-  font-weight: bold;
-}
-
-/* ===== ФІШКИ ===== */
-.token {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  position: absolute;
-  border: 1px solid white;
-  z-index: 20;
-  box-shadow: 0 0 6px rgba(0,0,0,0.8);
-  transition: all 0.3s ease;
-}
-
-/* ===== КНОПКИ УПРАВЛІННЯ ===== */
+/* ===== КНОПКИ ПІД ДОШКОЮ ===== */
 #controls {
   width: 100%;
   max-width: 400px;
@@ -197,100 +139,57 @@ body {
   border: 1px solid #334155;
   padding: 15px;
   border-radius: 8px;
-  margin-top: 15px;
+  margin-top: 15px; /* Завжди під дошкою! */
   display: flex;
   flex-direction: column;
   align-items: center;
-  z-index: 10;
+  flex-shrink: 0;
 }
 
-#rollBtn, #endTurnBtn {
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 6px;
-  cursor: pointer;
-  border: none;
+#controls button {
+  width: 100%; padding: 12px; font-size: 16px; font-weight: bold;
+  border-radius: 6px; cursor: pointer; border: none; margin-bottom: 5px;
 }
-
 #rollBtn { background: #0ea5e9; color: white; }
 #endTurnBtn { background: #22c55e; color: white; }
+#payBailBtn { background: #ef4444; color: white; }
 
-#decisionPanel {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 12px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  background: #0ea5e9;
-  color: white;
-  border: none;
-  border-radius: 6px;
-}
-
+#decisionPanel { width: 100%; display: flex; justify-content: space-between; gap: 10px; }
+.action-btn { flex: 1; padding: 12px; font-size: 14px; font-weight: bold; color: white; border: none; border-radius: 6px; }
+#buyBtn, #auctionBtn { background: #0ea5e9; }
 #payBtn { background: #ef4444; }
 #diceResult { margin-top: 10px; font-size: 14px; color: #38bdf8; font-weight: bold; text-align: center; }
 
-/* ===== СМУЖКИ ТА ЦІНИ ===== */
-.color-bar {
-  position: absolute;
-  z-index: 1;
-  opacity: 0.95;
-}
-
+/* ===== СМУЖКИ, ЦІНИ, ЗІРКИ, ФІШКИ ===== */
+.color-bar { position: absolute; z-index: 1; opacity: 0.95; }
 .bar-top { top: 0; left: 0; width: 100%; height: 22%; border-bottom: 1px solid #334155; }
 .bar-bottom { bottom: 0; left: 0; width: 100%; height: 22%; border-top: 1px solid #334155; }
 .bar-right { top: 0; right: 0; width: 22%; height: 100%; border-left: 1px solid #334155; }
 .bar-left { top: 0; left: 0; width: 22%; height: 100%; border-right: 1px solid #334155; }
 
 .cell-price {
-  position: absolute;
-  font-size: 8px;
-  white-space: nowrap;
-  z-index: 2;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-  letter-spacing: 0.5px;
+  position: absolute; font-size: 8px; white-space: nowrap; z-index: 2;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8); letter-spacing: 0.5px;
 }
-
-.price-buy { color: #fff; }
-.price-rent { color: #fca5a5; }
-
-.bar-top .cell-price { top: 50%; left: 50%; transform: translate(-50%, -50%); }
-.bar-bottom .cell-price { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+.price-buy { color: #fff; } .price-rent { color: #fca5a5; }
+.bar-top .cell-price, .bar-bottom .cell-price { top: 50%; left: 50%; transform: translate(-50%, -50%); }
 .bar-right .cell-price { top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(90deg); }
 .bar-left .cell-price { top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-90deg); }
 
-/* Зірочки рівнів */
 .cell-level {
-  position: absolute;
-  pointer-events: none;
-  z-index: 2;
-  display: flex;
-  flex-wrap: wrap-reverse;
-  justify-content: center;
-  align-items: center;
-  width: 20px;
-  gap: 1px;
+  position: absolute; pointer-events: none; z-index: 2; display: flex;
+  flex-wrap: wrap-reverse; justify-content: center; align-items: center; width: 20px; gap: 1px;
 }
-
-.cell-level span {
-  font-size: 9px;
-  line-height: 1;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-}
-
+.cell-level span { font-size: 9px; line-height: 1; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); }
 .bar-top-lvl { bottom: 2px; left: 50%; transform: translateX(-50%); }
 .bar-bottom-lvl { top: 2px; left: 50%; transform: translateX(-50%); }
 .bar-right-lvl { left: 2px; top: 50%; transform: translateY(-50%) rotate(90deg); }
 .bar-left-lvl { right: 2px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+
+.token {
+  width: 14px; height: 14px; border-radius: 50%; position: absolute;
+  border: 1px solid white; z-index: 20; box-shadow: 0 0 6px rgba(0,0,0,0.8); transition: all 0.3s ease;
+}
 
 /* Модальні вікна */
 .modal-overlay {
@@ -306,22 +205,15 @@ body {
 .modal-content h2 { margin: 10px 0; font-size: 22px; }
 .modal-body { padding: 15px; text-align: left; background: #1e293b; font-size: 14px; }
 .modal-body p { margin: 6px 0; display: flex; justify-content: space-between; }
-.close-btn {
-  position: absolute; top: 10px; right: 10px; background: transparent; border: none;
-  color: white; font-size: 18px; cursor: pointer; z-index: 10;
-}
-
-.auction-input {
-  width: 100%; padding: 12px; background: #020617; border: 1px solid #f59e0b;
-  border-radius: 6px; color: white; font-size: 16px; text-align: center; font-weight: bold; outline: none;
-}
-.auction-input:focus { box-shadow: 0 0 8px rgba(245, 158, 11, 0.5); }
+.close-btn { position: absolute; top: 10px; right: 10px; background: transparent; border: none; color: white; font-size: 18px; cursor: pointer; z-index: 10; }
+.auction-input { width: 100%; padding: 12px; background: #020617; border: 1px solid #f59e0b; border-radius: 6px; color: white; font-size: 16px; text-align: center; font-weight: bold; outline: none; }
 
 /* =========================================
    АДАПТАЦІЯ ДЛЯ ПК 
    ========================================= */
 @media (min-width: 768px) {
   #app { flex-direction: row; }
+  
   #players {
     width: 260px; height: 100vh; flex-direction: column;
     border-right: 2px solid #1e293b; border-bottom: none; align-items: stretch; white-space: normal;
@@ -329,8 +221,19 @@ body {
   #players h2 { display: block; text-align: center; color: #38bdf8; margin-bottom: 10px; }
   .player { min-width: auto; margin-bottom: 8px; }
   #actionPanel { margin-left: 0; justify-content: center; margin-top: 12px; }
-  #board { max-width: 600px; }
-  #centerLogo { font-size: 24px; }
-  #gameLogContainer { max-height: 160px; }
-  #controls { position: absolute; bottom: 20px; right: 20px; width: auto; margin-top: 0; }
+  
+  #game {
+    flex-direction: column;
+    justify-content: center; /* Центруємо по вертикалі на ПК */
+    overflow: hidden;
+  }
+  
+  #board {
+    max-width: 75vh; /* На ПК дошка залежить від висоти екрану, щоб не вилазити */
+  }
+  
+  #controls {
+    max-width: 75vh;
+    margin-top: 20px;
+  }
 }
