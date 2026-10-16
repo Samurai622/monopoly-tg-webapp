@@ -20,6 +20,18 @@ const tg = window.Telegram.WebApp;
   let hasUpgradedThisTurn = false;
   let lastTurnId = null;
 
+  // === ЗАЛІЗОБЕТОННА ВІБРАЦІЯ ===
+  function vibrateForMyTurn() {
+    try {
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+      }
+      if (navigator.vibrate) {
+        navigator.vibrate([200, 100, 200]);
+      }
+    } catch (e) { console.log("Вібрація не підтримується"); }
+  }
+
   /* Масив клітинок */
   const cellsData = [
     {name:"Start", img:"images/start.png"},
@@ -504,12 +516,12 @@ const tg = window.Telegram.WebApp;
       players = room.players.map(p => ({ ...p, id: Number(p.id) }));
       currentTurn = Number(room.currentTurn);
       currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
-        if (currentTurnId === String(myTgId) && lastTurnId !== String(myTgId) && lastTurnId !== null) {
-          if(window.Telegram?.WebApp?.HapticFeedback) {
-            window.Telegram.WebApp.HapticFeedback.impactOccurred('success');
-          }
-        }
-        lastTurnId = currentTurnId;
+      
+      if (currentTurnId === String(myTgId) && lastTurnId !== String(myTgId) && lastTurnId !== null) {
+        vibrateForMyTurn();
+      }
+      lastTurnId = currentTurnId;
+
       myPlayerIndex = players.findIndex(p => p.id === Number(myTgId));
       currentTurnState = room.turnState || 'waiting_roll';
       hasUpgradedThisTurn = room.hasUpgradedThisTurn || false;
@@ -532,12 +544,12 @@ const tg = window.Telegram.WebApp;
     
     currentTurn = Number(room.currentTurn);
     currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
-      if (currentTurnId === String(myTgId) && lastTurnId !== String(myTgId) && lastTurnId !== null) {
-        if(window.Telegram?.WebApp?.HapticFeedback) {
-          window.Telegram.WebApp.HapticFeedback.impactOccurred('success');
-        }
-      }
-      lastTurnId = currentTurnId;
+    
+    if (currentTurnId === String(myTgId) && lastTurnId !== String(myTgId) && lastTurnId !== null) {
+      vibrateForMyTurn();
+    }
+    lastTurnId = currentTurnId;
+
     myPlayerIndex = players.findIndex(p => p.id === Number(myTgId));
     currentTurnState = room.turnState || 'waiting_roll';
     hasUpgradedThisTurn = room.hasUpgradedThisTurn || false;
@@ -606,7 +618,7 @@ const tg = window.Telegram.WebApp;
     }
   }
 
-  // ОНОВЛЕНІ КНОПКИ ДІЙ (Очищає в'язницю автоматично!)
+  // ОНОВЛЕНІ КНОПКИ ДІЙ (З ПУЛЬСАЦІЄЮ)
   function updateActionButtons() {
     const me = players[myPlayerIndex];
     if(!me) return;
@@ -623,20 +635,27 @@ const tg = window.Telegram.WebApp;
     const buyBtn = document.getElementById("buyBtn");
     const auctionBtn = document.getElementById("auctionBtn");
     const payBtn = document.getElementById("payBtn");
+    const appBody = document.getElementById("app"); // Для пульсації
 
-    if(payBailBtn) payBailBtn.style.display = "none";
-    rollBtn.style.display = "none"; endTurnBtn.style.display = "none";
+    if(payBailBtn) { payBailBtn.style.display = "none"; payBailBtn.classList.remove("pulse-btn"); }
+    rollBtn.style.display = "none"; rollBtn.classList.remove("pulse-btn");
+    endTurnBtn.style.display = "none"; endTurnBtn.classList.remove("pulse-btn");
     decisionPanel.style.display = "none"; buyBtn.style.display = "none";
-    auctionBtn.style.display = "none"; payBtn.style.display = "none";
+    auctionBtn.style.display = "none"; 
+    payBtn.style.display = "none"; payBtn.classList.remove("pulse-btn");
+    
+    appBody.classList.remove("my-turn-pulse");
 
     if (canAct) {
+      appBody.classList.add("my-turn-pulse"); // Пульсація екрану
       const isInJail = Number(me.jail_turns) > 0;
 
       if (currentTurnState === 'waiting_roll') {
+        rollBtn.classList.add("pulse-btn");
         if (isInJail) {
           if (me.jail_turns > 3) {
             rollBtn.style.display = "none";
-            if(payBailBtn) payBailBtn.style.display = "block";
+            if(payBailBtn) { payBailBtn.style.display = "block"; payBailBtn.classList.add("pulse-btn"); }
             diceResult.innerText = "🚨 Спроби вичерпано. Сплатіть заставу!";
           } else {
             rollBtn.style.display = "block";
@@ -645,17 +664,20 @@ const tg = window.Telegram.WebApp;
           }
         } else {
           rollBtn.style.display = "block";
-          // ОЧИЩАЄМО НАПИС В'ЯЗНИЦІ, ЯКЩО МИ ВЖЕ ВІЛЬНІ
           if (diceResult.innerText.includes("В'язниця") || diceResult.innerText.includes("Спроби")) {
             diceResult.innerText = "";
           }
         }
       } 
-      else if (currentTurnState === 'can_end') endTurnBtn.style.display = "block";
+      else if (currentTurnState === 'can_end') {
+        endTurnBtn.style.display = "block";
+        endTurnBtn.classList.add("pulse-btn");
+      }
       else if (currentTurnState === 'must_buy') {
         decisionPanel.style.display = "flex"; buyBtn.style.display = "block"; auctionBtn.style.display = "block";
       } else if (currentTurnState === 'must_pay') {
         decisionPanel.style.display = "flex"; payBtn.style.display = "block";
+        payBtn.classList.add("pulse-btn");
       } else if (currentTurnState === 'casino_action') {
         const casinoModal = document.getElementById("casinoModal");
         if (casinoModal) casinoModal.style.display = "flex";
@@ -712,7 +734,6 @@ const tg = window.Telegram.WebApp;
     }
   }
 
-  // КНОПКА ЗАСТАВИ (МИТТЄВЕ ОНОВЛЕННЯ!)
   const payBailBtn = document.getElementById('payBailBtn');
   if (payBailBtn) {
     payBailBtn.addEventListener('click', async () => {
@@ -728,7 +749,6 @@ const tg = window.Telegram.WebApp;
         const data = await r.json();
         tg.showAlert(data.msg);
 
-        // МИТТЄВО ЗВІЛЬНЯЄМО ГРАВЦЯ В ПАМ'ЯТІ ТЕЛЕФОНУ
         const me = players[myPlayerIndex];
         if (me) {
           me.jail_turns = 0;
@@ -741,10 +761,6 @@ const tg = window.Telegram.WebApp;
       } catch (e) { console.error(e); }
     });
   }
-
-  // ==========================================
-  // 🤝 ПОВНА ЛОГІКА ОБМІНУ (TRADE)
-  // ==========================================
 
   function renderTradePropsList(containerId, ownerDbId) {
     const container = document.getElementById(containerId);
@@ -905,10 +921,6 @@ const tg = window.Telegram.WebApp;
 
   document.getElementById('acceptTradeBtn').addEventListener('click', () => respondTrade(true));
   document.getElementById('declineTradeBtn').addEventListener('click', () => respondTrade(false));
-
-  // ==========================================
-  // КНОПКИ ГРИ
-  // ==========================================
 
   document.getElementById('auctionBtn').addEventListener('click', async () => {
     if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
