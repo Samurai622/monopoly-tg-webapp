@@ -2,6 +2,7 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monopoly TG</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <link rel="stylesheet" href="style.css">
@@ -19,7 +20,7 @@
 
     <div id="game">
       <div id="controls">
-        <button id="payBailBtn" style="display:none; background:#ef4444; color:white; font-size:16px; font-weight:bold; width:100%; padding:12px; border:none; border-radius:6px; margin-bottom:10px;">
+        <button id="payBailBtn" style="display:none; background:#ef4444; color:white; font-size:16px; font-weight:bold; width:100%; border:none; border-radius:6px; margin-bottom:10px;">
           👮 Заплатити заставу ($50)
         </button>
         <button id="rollBtn">🎲 Кинути кубики</button>
@@ -33,9 +34,6 @@
 
         <div id="diceResult"></div>
       </div>
-
-        <div id="diceResult"></div>
-      </div>
       <div id="board">
         <div id="center">
           <div id="centerLogo">MONOPOLY</div>
@@ -46,6 +44,8 @@
           </div>
         </div>
       </div>
+    </div>
+
   </div>
 
   <!-- ВІКНО ІНФОРМАЦІЇ ПРО КЛІТИНКУ ТА ПРОДАЖ/ЗАСТАВА -->
@@ -114,18 +114,18 @@
   <div id="casinoModal" class="modal-overlay" style="display:none;">
     <div class="modal-content" style="border-color: #fbbf24; background: #1e1b4b; box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);">
       <h2 style="color: #fbbf24; margin-top: 15px;">🎰 Казино</h2>
-      
+
       <div class="modal-body" style="text-align: center; background: transparent;">
         <p style="color: white; margin-bottom: 15px;">Введіть ставку та оберіть результат 1 кубика:</p>
-        
+
         <input type="number" id="casinoBetInput" placeholder="Сума ставки ($)" class="auction-input" style="margin-bottom: 15px;">
-        
+
         <!-- Кнопки вибору ставки -->
         <div style="display:flex; justify-content: space-between; gap: 8px; margin-bottom: 10px;">
           <button class="action-btn casino-bet-btn" data-bet="even" style="background:#475569;">Парне (x2)</button>
           <button class="action-btn casino-bet-btn" data-bet="odd" style="background:#475569;">Непарне (x2)</button>
         </div>
-        
+
         <p style="color: #94a3b8; font-size: 12px; margin: 5px 0;">АБО ТОЧНЕ ЧИСЛО (x5):</p>
         <div style="display:flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-bottom: 15px;">
           <button class="action-btn casino-bet-btn" data-bet="1" style="background:#475569; width: 30%;">1</button>
@@ -151,7 +151,7 @@
     <div class="modal-content" style="border-color: #38bdf8; max-height: 85vh; overflow-y: auto;">
       <button id="closeTradeBtn" class="close-btn">✖</button>
       <h2 style="color: #38bdf8; margin-top: 15px;">🤝 Створити Обмін</h2>
-      
+
       <div class="modal-body" style="background: transparent;">
         <!-- Вибір суперника -->
         <label style="color:#94a3b8; font-size:12px;">Оберіть партнера по угоді:</label>
@@ -184,7 +184,7 @@
       <h2 style="color: #38bdf8; margin-top: 15px;">🤝 Пропозиція обміну!</h2>
       <div class="modal-body" style="background: transparent;">
         <p id="incomingTradeSender" style="font-weight:bold; color:white;"></p>
-        
+
         <div style="text-align:left; background:#1e293b; padding:10px; border-radius:8px; margin:10px 0; font-size:13px;">
           <p style="color:#4ade80; margin:4px 0;"><b>Вам пропонують:</b> <span id="incomingTradeGives"></span></p>
           <p style="color:#f87171; margin:4px 0;"><b>Взамін хочуть:</b> <span id="incomingTradeWants"></span></p>
