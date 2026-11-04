@@ -1018,5 +1018,75 @@ const tg = window.Telegram.WebApp;
     });
   });
 
+  // ==========================================
+  // 🎰 ЛОГІКА КАЗИНО (Слухачі подій)
+  // ==========================================
+  let selectedCasinoBetType = null;
+  const casinoBetBtns = document.querySelectorAll('.casino-bet-btn');
+
+  // Вибір типу ставки (Парне, непарне, число)
+  casinoBetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      casinoBetBtns.forEach(b => {
+        b.style.background = "#475569";
+        b.style.border = "none";
+      });
+      btn.style.background = "#3b82f6";
+      btn.style.border = "1px solid white";
+      selectedCasinoBetType = btn.getAttribute('data-bet');
+    });
+  });
+
+  // Кнопка "Зіграти!"
+  const casinoPlayBtn = document.getElementById('casinoPlayBtn');
+  if (casinoPlayBtn) {
+    casinoPlayBtn.addEventListener('click', async () => {
+      const betAmount = Number(document.getElementById('casinoBetInput').value);
+      
+      if (!betAmount || betAmount <= 0) {
+        tg.showAlert("Введіть суму ставки!"); return;
+      }
+      if (!selectedCasinoBetType) {
+        tg.showAlert("Оберіть, на що ставити (Парне, Непарне або Число)!"); return;
+      }
+
+      try {
+        const r = await fetch(`${API}/room/${chatId}/play_casino`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ playerId: Number(myTgId), betAmount, betType: selectedCasinoBetType })
+        });
+        if (!r.ok) {
+          const err = await r.json(); tg.showAlert(err.error || "Помилка казино"); return;
+        }
+        
+        const data = await r.json();
+        tg.showAlert(data.resultMsg); // Показує результати кидка кубика і виграш/програш
+        
+        document.getElementById('casinoModal').style.display = "none";
+        document.getElementById('casinoBetInput').value = '';
+        selectedCasinoBetType = null;
+        casinoBetBtns.forEach(b => { b.style.background = "#475569"; b.style.border = "none"; });
+        
+        await syncRoom();
+      } catch (e) { console.error(e); }
+    });
+  }
+
+  // Кнопка "Відмовитись" у казино
+  const casinoSkipBtn = document.getElementById('casinoSkipBtn');
+  if (casinoSkipBtn) {
+    casinoSkipBtn.addEventListener('click', async () => {
+      try {
+        const r = await fetch(`${API}/room/${chatId}/skip_casino`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ playerId: Number(myTgId) })
+        });
+        if (!r.ok) return;
+        document.getElementById('casinoModal').style.display = "none";
+        await syncRoom();
+      } catch (e) { console.error(e); }
+    });
+  }
+
   connectToServer();
   setInterval(syncRoom, 2000);
