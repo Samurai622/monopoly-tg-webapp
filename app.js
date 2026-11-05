@@ -456,7 +456,7 @@ const tg = window.Telegram.WebApp;
       //const d1 = rand(1,6); 
       //const d2 = rand(1,6); 
       //const steps = d1 + d2;
-      const targetCell = 20; // 👈 ВПИШИ СЮДИ 20 АБО 30
+      const targetCell = 30; // 👈 ВПИШИ СЮДИ 20 АБО 30
       // ==========================================
 
       const me = players[myPlayerIndex];
