@@ -650,16 +650,20 @@ const tg = window.Telegram.WebApp;
       const isInJail = Number(me.jail_turns) > 0;
 
       if (currentTurnState === 'waiting_roll') {
-        rollBtn.classList.add("pulse-btn");
         if (isInJail) {
           if (me.jail_turns > 3) {
+            // 4-Й ХІД: Спроби вичерпано! Тільки оплата.
             rollBtn.style.display = "none";
-            if(payBailBtn) { payBailBtn.style.display = "block"; payBailBtn.classList.add("pulse-btn"); }
-            diceResult.innerText = "🚨 Спроби вичерпано. Сплатіть заставу!";
+            if(payBailBtn) { 
+              payBailBtn.style.display = "block"; 
+              payBailBtn.classList.add("pulse-btn"); 
+            }
+            diceResult.innerText = "🚨 3 спроби вичерпано! Сплатіть $50, щоб вийти та кинути кубик.";
           } else {
+            // ХОДИ 1, 2, 3: Вибір за гравцем
             rollBtn.style.display = "block";
             if(payBailBtn) payBailBtn.style.display = "block";
-            diceResult.innerText = `👮 В'язниця (Спроба ${me.jail_turns}/3). Дабл або $50.`;
+            diceResult.innerText = `👮 В'язниця (Спроба ${me.jail_turns}/3).\nДабл (вихід без ходу) АБО $50 (вийти і піти).`;
           }
         } else {
           rollBtn.style.display = "block";
@@ -667,7 +671,7 @@ const tg = window.Telegram.WebApp;
             diceResult.innerText = "";
           }
         }
-      } 
+      }
       else if (currentTurnState === 'can_end') {
         endTurnBtn.style.display = "block";
         endTurnBtn.classList.add("pulse-btn");
