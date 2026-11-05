@@ -8,19 +8,21 @@ const tg = window.Telegram.WebApp;
 
   const myTgId = Number(tg.initDataUnsafe.user.id);
   const urlParams = new URLSearchParams(window.location.search);
-  const chatId = urlParams.get('chatId');
+  
+  // ВАЖЛИВО: Тепер зчитуємо roomId замість chatId!
+  const roomId = urlParams.get('roomId');
 
-  if (!chatId) {
-    alert("Немає chatId. Відкрий гру з групи / чату");
-    throw new Error("No chatId");
+  if (!roomId) {
+    alert("Немає roomId. Відкрий гру через бота з лобі!");
+    throw new Error("No roomId");
   }
+  
   const API = 'https://server-monopoly-tg-8um6.onrender.com';
   let isAnimatingMove = false;
   let pendingRoom = null;
   let hasUpgradedThisTurn = false;
   let lastTurnId = null;
 
-  // === ЗАЛІЗОБЕТОННА ВІБРАЦІЯ ===
   function vibrateForMyTurn() {
     try {
       if (window.Telegram?.WebApp?.HapticFeedback) {
@@ -374,7 +376,7 @@ const tg = window.Telegram.WebApp;
 
   async function sendPropertyAction(endpoint, cellId) {
     try {
-      const r = await fetch(`${API}/room/${chatId}/${endpoint}`, {
+      const r = await fetch(`${API}/room/${roomId}/${endpoint}`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId, cellId })
       });
@@ -456,7 +458,7 @@ const tg = window.Telegram.WebApp;
       const steps = d1 + d2;
       diceResult.innerText = `🎲 ${d1} + ${d2} = ${steps}`;
       
-      const r = await fetch(`${API}/room/${chatId}/move`, {
+      const r = await fetch(`${API}/room/${roomId}/move`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: Number(myTgId), d1, d2 }) 
       });
@@ -480,12 +482,12 @@ const tg = window.Telegram.WebApp;
 
   async function connectToServer() {
     try {
-      await fetch(`${API}/room/${chatId}/join`, {
+      await fetch(`${API}/room/${roomId}/join`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ id: String(myTgId), name: tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name })
       });
     } catch (e) {}
-    const res = await fetch(`${API}/room/${chatId}/state`);
+    const res = await fetch(`${API}/room/${roomId}/state`);
     if(!res.ok) { document.body.innerHTML = `<h1 style="text-align:center;margin-top:50px;">⛔ Гру завершено</h1>`; return; }
     const room = await res.json();
     await applyRoom(room);
@@ -493,7 +495,7 @@ const tg = window.Telegram.WebApp;
 
   async function syncRoom() {
     try {
-      const res = await fetch(`${API}/room/${chatId}/state`);
+      const res = await fetch(`${API}/room/${roomId}/state`);
       if(!res.ok) return;
       const room = await res.json();
 
@@ -516,7 +518,6 @@ const tg = window.Telegram.WebApp;
       players = room.players.map(p => ({ ...p, id: Number(p.id) }));
       currentTurn = Number(room.currentTurn);
       currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
-      
       if (currentTurnId === String(myTgId) && lastTurnId !== String(myTgId) && lastTurnId !== null) {
         vibrateForMyTurn();
       }
@@ -544,7 +545,6 @@ const tg = window.Telegram.WebApp;
     
     currentTurn = Number(room.currentTurn);
     currentTurnId = room.currentTurnId ? String(room.currentTurnId) : null;
-    
     if (currentTurnId === String(myTgId) && lastTurnId !== String(myTgId) && lastTurnId !== null) {
       vibrateForMyTurn();
     }
@@ -618,7 +618,6 @@ const tg = window.Telegram.WebApp;
     }
   }
 
-  // ОНОВЛЕНІ КНОПКИ ДІЙ (З ПУЛЬСАЦІЄЮ)
   function updateActionButtons() {
     const me = players[myPlayerIndex];
     if(!me) return;
@@ -635,7 +634,7 @@ const tg = window.Telegram.WebApp;
     const buyBtn = document.getElementById("buyBtn");
     const auctionBtn = document.getElementById("auctionBtn");
     const payBtn = document.getElementById("payBtn");
-    const appBody = document.getElementById("app"); // Для пульсації
+    const appBody = document.getElementById("app"); 
 
     if(payBailBtn) { payBailBtn.style.display = "none"; payBailBtn.classList.remove("pulse-btn"); }
     rollBtn.style.display = "none"; rollBtn.classList.remove("pulse-btn");
@@ -647,7 +646,7 @@ const tg = window.Telegram.WebApp;
     appBody.classList.remove("my-turn-pulse");
 
     if (canAct) {
-      appBody.classList.add("my-turn-pulse"); // Пульсація екрану
+      appBody.classList.add("my-turn-pulse");
       const isInJail = Number(me.jail_turns) > 0;
 
       if (currentTurnState === 'waiting_roll') {
@@ -739,7 +738,7 @@ const tg = window.Telegram.WebApp;
     payBailBtn.addEventListener('click', async () => {
       if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
       try {
-        const r = await fetch(`${API}/room/${chatId}/pay_bail`, {
+        const r = await fetch(`${API}/room/${roomId}/pay_bail`, {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ playerId: myTgId })
         });
@@ -840,7 +839,7 @@ const tg = window.Telegram.WebApp;
     }
 
     try {
-      const r = await fetch(`${API}/room/${chatId}/propose_trade`, {
+      const r = await fetch(`${API}/room/${roomId}/propose_trade`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
@@ -900,7 +899,7 @@ const tg = window.Telegram.WebApp;
 
   async function respondTrade(accept) {
     try {
-      const r = await fetch(`${API}/room/${chatId}/respond_trade`, {
+      const r = await fetch(`${API}/room/${roomId}/respond_trade`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId, accept })
@@ -925,7 +924,7 @@ const tg = window.Telegram.WebApp;
   document.getElementById('auctionBtn').addEventListener('click', async () => {
     if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
     try {
-      const r = await fetch(`${API}/room/${chatId}/start_auction`, {
+      const r = await fetch(`${API}/room/${roomId}/start_auction`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
@@ -947,7 +946,7 @@ const tg = window.Telegram.WebApp;
     }
     
     try {
-      const r = await fetch(`${API}/room/${chatId}/auction_bid`, {
+      const r = await fetch(`${API}/room/${roomId}/auction_bid`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId, amount })
       });
@@ -959,7 +958,7 @@ const tg = window.Telegram.WebApp;
 
   document.getElementById('auctionPassBtn').addEventListener('click', async () => {
     try {
-      const r = await fetch(`${API}/room/${chatId}/auction_pass`, {
+      const r = await fetch(`${API}/room/${roomId}/auction_pass`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
@@ -971,7 +970,7 @@ const tg = window.Telegram.WebApp;
   document.getElementById('buyBtn').addEventListener('click', async () => {
     if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
     try {
-      const r = await fetch(`${API}/room/${chatId}/buy`, {
+      const r = await fetch(`${API}/room/${roomId}/buy`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
@@ -983,7 +982,7 @@ const tg = window.Telegram.WebApp;
   document.getElementById('payBtn').addEventListener('click', async () => {
     if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
     try {
-      const r = await fetch(`${API}/room/${chatId}/pay`, {
+      const r = await fetch(`${API}/room/${roomId}/pay`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
@@ -996,7 +995,7 @@ const tg = window.Telegram.WebApp;
   document.getElementById('endTurnBtn').addEventListener('click', async () => {
     if(!currentTurnId || String(currentTurnId) !== String(myTgId)) return;
     try {
-      await fetch(`${API}/room/${chatId}/end_turn`, {
+      await fetch(`${API}/room/${roomId}/end_turn`, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ playerId: myTgId })
       });
@@ -1009,7 +1008,7 @@ const tg = window.Telegram.WebApp;
     tg.showConfirm("Ви дійсно хочете здатися?", async (confirmed) => {
       if (!confirmed) return;
       try {
-        await fetch(`${API}/room/${chatId}/surrender`, {
+        await fetch(`${API}/room/${roomId}/surrender`, {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ playerId: myTgId})
         });
@@ -1018,13 +1017,9 @@ const tg = window.Telegram.WebApp;
     });
   });
 
-  // ==========================================
-  // 🎰 ЛОГІКА КАЗИНО (Слухачі подій)
-  // ==========================================
   let selectedCasinoBetType = null;
   const casinoBetBtns = document.querySelectorAll('.casino-bet-btn');
 
-  // Вибір типу ставки (Парне, непарне, число)
   casinoBetBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       casinoBetBtns.forEach(b => {
@@ -1037,7 +1032,6 @@ const tg = window.Telegram.WebApp;
     });
   });
 
-  // Кнопка "Зіграти!"
   const casinoPlayBtn = document.getElementById('casinoPlayBtn');
   if (casinoPlayBtn) {
     casinoPlayBtn.addEventListener('click', async () => {
@@ -1051,7 +1045,7 @@ const tg = window.Telegram.WebApp;
       }
 
       try {
-        const r = await fetch(`${API}/room/${chatId}/play_casino`, {
+        const r = await fetch(`${API}/room/${roomId}/play_casino`, {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ playerId: Number(myTgId), betAmount, betType: selectedCasinoBetType })
         });
@@ -1060,7 +1054,7 @@ const tg = window.Telegram.WebApp;
         }
         
         const data = await r.json();
-        tg.showAlert(data.resultMsg); // Показує результати кидка кубика і виграш/програш
+        tg.showAlert(data.resultMsg);
         
         document.getElementById('casinoModal').style.display = "none";
         document.getElementById('casinoBetInput').value = '';
@@ -1072,12 +1066,11 @@ const tg = window.Telegram.WebApp;
     });
   }
 
-  // Кнопка "Відмовитись" у казино
   const casinoSkipBtn = document.getElementById('casinoSkipBtn');
   if (casinoSkipBtn) {
     casinoSkipBtn.addEventListener('click', async () => {
       try {
-        const r = await fetch(`${API}/room/${chatId}/skip_casino`, {
+        const r = await fetch(`${API}/room/${roomId}/skip_casino`, {
           method: 'POST', headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ playerId: Number(myTgId) })
         });
