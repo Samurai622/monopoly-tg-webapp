@@ -453,9 +453,17 @@ const tg = window.Telegram.WebApp;
     if (isRolling || !currentTurnId || currentTurnState !== 'waiting_roll' || String(currentTurnId) !== String(myTgId)) return;
     isRolling = true;
     try {
-      const d1 = rand(1,6); 
-      const d2 = rand(1,6); 
-      const steps = d1 + d2;
+      //const d1 = rand(1,6); 
+      //const d2 = rand(1,6); 
+      //const steps = d1 + d2;
+      const targetCell = 20; // 👈 ВПИШИ СЮДИ 20 АБО 30
+      // ==========================================
+
+      const me = players[myPlayerIndex];
+      let steps = (targetCell - me.pos + 40) % 40;
+      let d1 = Math.floor(steps / 2);
+      let d2 = steps - d1;
+      if (d1 === d2 && d1 > 1) d1 -= 1, d2 += 1; // Щоб випадково не викинути дабл при тесті
       diceResult.innerText = `🎲 ${d1} + ${d2} = ${steps}`;
       
       const r = await fetch(`${API}/room/${roomId}/move`, {
